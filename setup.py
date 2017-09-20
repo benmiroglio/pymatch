@@ -7,7 +7,7 @@ setup(
   author = 'Ben Miroglio',
   author_email = 'benmiroglio@gmail.com',
   url = 'https://github.com/benmiroglio/matcher', 
-  download_url = 'https://github.com/benmiroglio/matcher/archive/0.1.tar.gz', 
+  download_url = 'https://github.com/benmiroglio/matcher/archive/0.5.tar.gz', 
   keywords = ['logistic', 'regression', 'matching', 'observational', 'study', 'causal', 'inference'],
   classifiers = [],
   install_requires=[
