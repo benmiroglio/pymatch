@@ -3,6 +3,7 @@ from statsmodels.genmod.generalized_linear_model import GLM
 from statsmodels.tools.sm_exceptions import PerfectSeparationError
 from statsmodels.distributions.empirical_distribution import ECDF
 from scipy import stats
+from itertools import chain
 import statsmodels.api as sm
 import patsy 
 import sys
