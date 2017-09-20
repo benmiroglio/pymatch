@@ -75,7 +75,7 @@ class Matcher:
         self.matched_data = []  
         # create design matrix of all variables not in <exclude>
         
-        print '{} ~ {}'.format(yvar, '+'.join(self.xvars))
+        print 'Formula:\n{} ~ {}'.format(yvar, '+'.join(self.xvars))
         self.y, self.X = patsy.dmatrices('{} ~ {}'.format(yvar, '+'.join(self.xvars)), data=self.data,
                                              return_type='dataframe')
 
@@ -95,8 +95,8 @@ class Matcher:
         print 'n minority:', len(self.data[self.data[yvar] == self.minority])
         
         # explodes design matrix if included
-        assert "client_id" not in self.xvars, \
-               "client_id shouldn't be a covariate! Please set exclude=['client_id']"    
+        assert "client_id" not in self.xvars, "client_id shouldn't be a covariate! Please set exclude=['client_id']"
+
 
     def fit_scores(self, balance=True, nmodels=None):
         """
@@ -297,21 +297,23 @@ class Matcher:
     def plot_bars(self):
         def prep_plot(data, var, colname):
             t, c = data[data[self.yvar]==True], data[data[self.yvar]==False]
-            countt = t[[var]].groupby(var).count() / len(t)
-            countc = c[[var]].groupby(var).count() / len(c)
+            #dummy var for counting
+            dummy = [i for i in t.columns if i != var][0]
+            countt = t[[var, dummy]].groupby(var).count() / len(t)
+            countc = c[[var, dummy]].groupby(var).count() / len(c)
             ret = (countt-countc).dropna()
             ret.columns = [colname]
             return ret
-        
+
         for col in self.matched_data.columns:
             if not is_continuous(col, self.X) and col not in self.exclude:
                 dbefore = prep_plot(self.data, col, colname='before')
                 dafter = prep_plot(self.matched_data, col, colname='after')
 
-                dbefore.join(dafter).plot.bar()
+                dbefore.join(dafter).plot.bar(alpha=.8)
                 plt.title('Proportional Difference (test - control)')
                 plt.ylim((-.1, .1))
-                
+
     def prep_prop_test(self, data, var):
         print var
         counts = data.groupby([var, self.yvar]).count().reset_index()
