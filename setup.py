@@ -10,4 +10,13 @@ setup(
   download_url = 'https://github.com/benmiroglio/matcher/archive/0.1.tar.gz', 
   keywords = ['logistic', 'regression', 'matching', 'observational', 'study', 'causal', 'inference'],
   classifiers = [],
+  install_requires=[
+  'seaborn',
+  'statsmodels'.
+  'scipy',
+  'patsy',
+  'matplotlib',
+  'pandas', 
+  'numpy'
+  ]
 )
