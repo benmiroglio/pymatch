@@ -329,8 +329,8 @@ class Matcher:
                 
                 # plotting
                 f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, sharex=True, figsize=(12, 5))
-                ax1.plot(xcb.x, xcb.y, label='Control', color=CONTROL_COLOR)
-                ax1.plot(xtb.x, xtb.y, label='Test', color=TEST_COLOR)
+                ax1.plot(xcb.x, xcb.y, label='Control')
+                ax1.plot(xtb.x, xtb.y, label='Test')
                 ax1.plot(xcb.x, xcb.y, label='Control')
                 ax1.plot(xtb.x, xtb.y, label='Test')
                     
