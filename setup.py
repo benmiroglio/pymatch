@@ -12,7 +12,7 @@ setup(
   classifiers = [],
   install_requires=[
   'seaborn',
-  'statsmodels'.
+  'statsmodels',
   'scipy',
   'patsy',
   'matplotlib',
