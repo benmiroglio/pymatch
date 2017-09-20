@@ -3,6 +3,7 @@ from statsmodels.genmod.generalized_linear_model import GLM
 from statsmodels.tools.sm_exceptions import PerfectSeparationError
 from statsmodels.distributions.empirical_distribution import ECDF
 from scipy import stats
+from collections import Counter
 from itertools import chain
 import statsmodels.api as sm
 import patsy 
@@ -11,6 +12,62 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+
+def _chi2_distance(tb, cb):
+    dist = 0
+    for b in np.union1d(tb.keys(), cb.keys()):
+        if b not in tb:
+            tb[b] = 0
+        if b not in cb:
+            cb[b] = 0
+        xi, yi = tb[b], cb[b]
+        dist += ((xi - yi) ** 2) / (xi + yi)
+    return dist/2
+
+def chi2_distance(t, c):
+    tb, cb, bins = which_bin_hist(t, c)
+    tb, cb = bin_hist(tb, cb, bins)
+    return _chi2_distance(tb,cb)
+    
+
+def which_bin_hist(t, c):
+    comb = np.concatenate((t, c))
+    bins =np.arange(np.percentile(comb , 99), step=10)
+    t_binned = np.digitize(t, bins)
+    c_binned = np.digitize(c, bins)
+    return t_binned, c_binned, bins
+
+def bin_hist(t, c, bins):
+    tc, cc = Counter(t), Counter(c)
+    def idx_to_value(d, bins):
+        result = {}
+        for k, v, in d.items():
+            result[int(bins[k-1])] = v
+        return result
+    return idx_to_value(tc, bins), idx_to_value(cc, bins)
+
+def grouped_permutation_test(f, t, c, n_samples=1000):
+    truth = f(t, c)
+    comb = np.concatenate((t, c))
+    times_geq=0
+    samp_arr = []
+    for i in range(n_samples):
+        tn = len(t)
+        combs = comb[:]
+        np.random.shuffle(combs)
+        tt = combs[:tn]
+        cc = combs[tn:]
+        sample_truth = f(np.array(tt), np.array(cc))
+        if sample_truth >= truth:
+            times_geq += 1
+        samp_arr.append(sample_truth)
+    return times_geq / n_samples, truth
+
+def std_diff(a, b):
+    sd = np.std(a.append(b))
+    med = (np.median(a) - np.median(b)) / sd
+    mean = (np.mean(a) - np.mean(b)) / sd
+    return med, mean
 
 def progress(i, n, prestr=''):
     sys.stdout.write('\r{}{}%'.format(prestr, round(i / n * 100, 2)))
