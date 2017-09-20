@@ -1,13 +1,13 @@
 from distutils.core import setup
 setup(
-  name = 'matcher',
-  packages = ['matcher'],
-  version = '0.1',
+  name = 'pymatch',
+  packages = ['pymatch'],
+  version = '0.5',
   description = 'Matching techniques for Observational Studies',
   author = 'Ben Miroglio',
   author_email = 'benmiroglio@gmail.com',
-  url = 'https://github.com/benmiroglio/matcher', 
-  download_url = 'https://github.com/benmiroglio/matcher/archive/0.5.tar.gz', 
+  url = 'https://github.com/benmiroglio/pymatch', 
+  download_url = 'https://github.com/benmiroglio/pymatch/archive/0.5.tar.gz', 
   keywords = ['logistic', 'regression', 'matching', 'observational', 'study', 'causal', 'inference'],
   classifiers = [],
   install_requires=[
