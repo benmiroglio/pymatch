@@ -3,15 +3,14 @@
 
 The following example demonstrates how to the use the `pymatch` package to match [Lending Club Loan Data](https://www.kaggle.com/wendykan/lending-club-loan-data). Follow the link to download the dataset from Kaggle (you'll have to create an account, it's fast and free!).
 
-Here we match Lending Club users that fully paid off loans (control) to those that defaulted (test). The example is contrived, however it shows the process at work as we find similiarities between & match two very different samples. 
+Here we match Lending Club users that fully paid off loans (control) to those that defaulted (test).
 
-The Matching process can be broken down into the following steps:
-
-* [Data Prep](#data-prep)
+ A use case for this could be that we want to analyze user sentiment with the platform. Users that default may have worse sentiment because they are predisposed to a bad situation--influencing their perception of the product. Before analyzing sentiment, we can match users that paid their loans in full to users that defaulted based on the characteristics we observe. If matching is successful, we could then make a statetment about the **causal effect** defaulting has on sentiment if we are confident our samples are sufficiently balanced and our model is free from omitted variable bias. 
+ 
 
 ----
 
-## Data Prep
+### Data Prep
 
 
 ```python
@@ -43,7 +42,7 @@ data = pd.read_csv("/Users/bmiroglio/Downloads/lending-club-loan-data/loan.csv")
         ]]
 ```
 
-Create test and control groups and reassign `loan_status` to a binary treatment indicator. This is our reponse in the logistic regression model(s) used to generate propensity scores.
+Create test and control groups and reassign `loan_status` to be a binary treatment indicator. This is our reponse in the logistic regression model(s) used to generate propensity scores.
 
 
 ```python
@@ -55,9 +54,10 @@ control['loan_status'] = 0
 
 ----
 
-### `Matcher`
+###`Matcher`
 
 Initalize `Matcher` object. Note that upon intialization, `Matcher` prints the formula used to fit logistic regression model(s) and the number of records in the majority/minority class. By default, `Matcher` will use all covariates in the dataset unless a formula is specified by the user. Any covariates passed to the `exclude` parameter will be ingored from the model fitting process. The exclude parameter is particularly useful for unique identifiers like a `user_id`.
+
 
 ```python
 m = Matcher(test, control, yvar="loan_status")
@@ -83,32 +83,41 @@ m.fit_scores(balance=True, nmodels=100)
     Average Accuracy: 70.21%
 
 
-The average accuracy of our 100 models is 70.21%, suggesting that there's significant separability in our data and hence justifiying the need for the matching procedure. 
+The average accuracy of our 100 models is 70.65%, suggesting that there's separability within our data and justifiying the need for the matching procedure. 
+
+
+### Predict Scores 
 
 
 ```python
 m.predict_scores()
 ```
 
+    Caclculating Propensity Scores...
+
+
 ```python
 m.plot_scores()
 ```
 
 
-![png](Example_files/Example_15_0.png)
+![png](Example_files/Example_14_0.png)
 
 
 The plot above demonstrates the separability present in our data. Test profiles have a much higher **propensity**, or estimated probability of defaulting given the features we isolated in the data.
 
-Before proceeding, we need to tune the threshold used for matching. Records are matched if their propsenity scores are within `threshold` of each other, i.e. for two scores, `s1` and `s2`, `abs(s1 - s2)` <= `threshold`. Records with _no_ matches are dropped, therefore we want to choose the smallest threshold such that most if not all of our data are retained. 
+### Tune Threshold
+
+
 
 ```python
 m.tune_threshold(method='random')
 ```
 
-![png](Example_files/Example_17_0.png)
 
-It looks like a threshold of `0.0001` retains 100% of our data. We will now match using this threshold. 
+![png](Example_files/Example_16_0.png)
+
+
 
 ```python
 m.match(method="min", threshold=0.0001)
@@ -120,15 +129,15 @@ cd = m.compare_discrete(return_table=True)
 ```
 
 
-![png](Example_files/Example_19_0.png)
+![png](Example_files/Example_18_0.png)
 
 
 
-![png](Example_files/Example_19_1.png)
+![png](Example_files/Example_18_1.png)
 
 
 
-![png](Example_files/Example_19_2.png)
+![png](Example_files/Example_18_2.png)
 
 
 
@@ -193,23 +202,23 @@ cc = m.compare_continuous(return_table=True)
 ```
 
 
-![png](Example_files/Example_21_0.png)
+![png](Example_files/Example_20_0.png)
 
 
 
-![png](Example_files/Example_21_1.png)
+![png](Example_files/Example_20_1.png)
 
 
 
-![png](Example_files/Example_21_2.png)
+![png](Example_files/Example_20_2.png)
 
 
 
-![png](Example_files/Example_21_3.png)
+![png](Example_files/Example_20_3.png)
 
 
 
-![png](Example_files/Example_21_4.png)
+![png](Example_files/Example_20_4.png)
 
 
 
@@ -315,3 +324,17 @@ cc
 </div>
 
 
+
+
+```python
+%%bash
+pwd
+```
+
+    /Users/bmiroglio/src/pymatch
+
+
+
+```python
+
+```
