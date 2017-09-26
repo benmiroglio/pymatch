@@ -43,7 +43,7 @@ class Matcher:
         self.matched_data = []  
         self.y, self.X = patsy.dmatrices('{} ~ {}'.format(yvar, '+'.join(self.xvars)), data=self.data,
                                              return_type='dataframe')
-        self.xvars = [i for i in self.data.columns if i not in exclude]
+        self.xvars = [i for i in self.data.columns if i not in self.exclude]
         self.test= self.data[self.data[yvar] == True]
         self.control = self.data[self.data[yvar] == False]
         self.testn = len(self.test)
