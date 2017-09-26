@@ -9,7 +9,7 @@ dependencies =[
   'numpy'
   ]
 
-VERSION = "0.1.4"
+VERSION = "0.1.3"
 
 setup(
   name = 'pymatch',
@@ -23,4 +23,4 @@ setup(
   keywords = ['logistic', 'regression', 'matching', 'observational', 'study', 'causal', 'inference'],
   include_package_data=True,
   requires=dependencies
-  )
+)

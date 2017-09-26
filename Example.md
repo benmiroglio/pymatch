@@ -5,9 +5,13 @@ The following example demonstrates how to the use the `pymatch` package to match
 
 Here we match Lending Club users that fully paid off loans (control) to those that defaulted (test). The example is contrived, however it shows the process at work as we find similiarities between & match two very different samples. 
 
+The Matching process can be broken down into the following steps:
+
+* [Data Prep](#data-prep)
+
 ----
 
-### Data Prep
+## Data Prep
 
 
 ```python
