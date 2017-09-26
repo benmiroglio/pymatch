@@ -3,3 +3,4 @@ setup.cfg
 setup.py
 pymatch/Matcher.py
 pymatch/__init__.py
+recursive-include utils *.py
