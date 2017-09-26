@@ -24,6 +24,5 @@ setup(
   classifiers = [],
   include_package_data=True,
   package_data={'': ['*.py']},
-  requires=dependencies,
-  provides=['utils', 'sys']
+  requires=dependencies
 )

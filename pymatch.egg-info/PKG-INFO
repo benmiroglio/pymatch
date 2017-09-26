@@ -1,0 +1,21 @@
+Metadata-Version: 1.1
+Name: pymatch
+Version: 0.1.3
+Summary: Matching techniques for Observational Studies
+Home-page: https://github.com/benmiroglio/pymatch
+Author: Ben Miroglio
+Author-email: benmiroglio@gmail.com
+License: UNKNOWN
+Download-URL: https://github.com/benmiroglio/pymatch/archive/0.1.3.tar.gz
+Description: UNKNOWN
+Keywords: logistic,regression,matching,observational,study,causal,inference
+Platform: UNKNOWN
+Requires: seaborn
+Requires: statsmodels
+Requires: scipy
+Requires: patsy
+Requires: matplotlib
+Requires: pandas
+Requires: numpy
+Provides: utils
+Provides: sys
