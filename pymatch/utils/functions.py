@@ -31,7 +31,7 @@ def ks_boot(tr, co, nboots=1000):
         ss.append(s_ks)
         if s_ks >= fs_ks:
             bbcount += 1
-    ks_boot_pval = bbcount / nboots
+    ks_boot_pval = bbcount * 1.0 / nboots
     return ks_boot_pval
 
 def _chi2_distance(tb, cb):
@@ -42,8 +42,8 @@ def _chi2_distance(tb, cb):
         if b not in cb:
             cb[b] = 0
         xi, yi = tb[b], cb[b]
-        dist += ((xi - yi) ** 2) / (xi + yi)
-    return dist/2
+        dist += ((xi - yi) ** 2) * 1.0 / (xi + yi)
+    return dist * 1.0 / 2
 
 def chi2_distance(t, c):
     tb, cb, bins = which_bin_hist(t, c)
@@ -81,12 +81,12 @@ def grouped_permutation_test(f, t, c, n_samples=1000):
         if sample_truth >= truth:
             times_geq += 1
         samp_arr.append(sample_truth)
-    return times_geq / n_samples, truth
+    return (times_geq * 1.0)  / n_samples, truth
 
 def std_diff(a, b):
     sd = np.std(a.append(b))
-    med = (np.median(a) - np.median(b)) / sd
-    mean = (np.mean(a) - np.mean(b)) / sd
+    med = (np.median(a) - np.median(b)) * 1.0 / sd
+    mean = (np.mean(a) - np.mean(b)) * 1.0 / sd
     return med, mean
 
 def progress(i, n, prestr=''):

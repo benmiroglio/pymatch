@@ -296,7 +296,7 @@ class Matcher:
                 plt.title(title_str.format(col, test_results_i["before"], test_results_i["after"]))
                 lim = max(.09, abs(df).max().max()) + .01
                 plt.ylim((-lim, lim))
-        return pd.Dataframe(test_results)[['var', 'before', 'after']] if return_table else None
+        return pd.DataFrame(test_results)[['var', 'before', 'after']] if return_table else None
                 
 
     def prep_prop_test(self, data, var):
@@ -335,6 +335,5 @@ class Matcher:
         
     def _scores_to_accuracy(self, m, X, y):
         preds = [1.0 if i >= .5 else 0.0 for i in m.predict(X)]
-        return (y == preds).sum() / len(y)
+        return (y == preds).sum() * 1.0 / len(y)
 
-        
