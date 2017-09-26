@@ -5,7 +5,7 @@ from statsmodels.distributions.empirical_distribution import ECDF
 from scipy import stats
 from collections import Counter
 from itertools import chain
-import utils.functions as uf
+from utils import functions as uf
 import statsmodels.api as sm
 import patsy 
 import seaborn as sns

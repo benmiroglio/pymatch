@@ -15,7 +15,12 @@ class Matcher:
     '''
 
     def __init__(self, test, control, yvar, formula=None, exclude=[]):  
+        # configure plots for ipynb
         plt.rcParams["figure.figsize"] = (10, 5)
+        # assign unique indices to test and control 
+        t, c = [i.copy().reset_index(drop=True) for i in (test, control)]
+        c.index += len(t)
+        self.data = t.append(c).dropna(axis=1, how="all")
         self.control_color = "#1F77B4"
         self.test_color = "#FF7F0E"
         self.yvar = yvar
@@ -24,40 +29,23 @@ class Matcher:
         self.models = []
         self.swdata = None
         self.model_accurracy = []
-        # create unique indices for each row
-        # and combine test and control
-        t, c = [i.copy().reset_index(drop=True) for i in (test, control)]
-        c.index += len(t)
-        self.data = t.append(c).dropna(axis=1, how="all")
-        # should be binary 0, 1
-        self.data[yvar] = self.data[yvar].astype(int)
+        self.data[yvar] = self.data[yvar].astype(int)  # should be binary 0, 1
         self.xvars = [i for i in self.data.columns if i not in self.exclude and i != yvar]
         self.matched_data = []  
-        # create design matrix of all variables not in <exclude>
-        
-        print 'Formula:\n{} ~ {}'.format(yvar, '+'.join(self.xvars))
         self.y, self.X = patsy.dmatrices('{} ~ {}'.format(yvar, '+'.join(self.xvars)), data=self.data,
                                              return_type='dataframe')
-
         self.xvars = [i for i in self.data.columns if i not in exclude]
-            
         self.test= self.data[self.data[yvar] == True]
         self.control = self.data[self.data[yvar] == False]
         self.testn = len(self.test)
         self.controln = len(self.control)
-        
-        # do we have a class imbalance problem?
         self.minority, self.majority = \
           [i[1] for i in sorted(zip([self.testn, self.controln], [1, 0]), 
                                 key=lambda x: x[0])]
-                        
+        print 'Formula:\n{} ~ {}'.format(yvar, '+'.join(self.xvars))
         print 'n majority:', len(self.data[self.data[yvar] == self.majority])
         print 'n minority:', len(self.data[self.data[yvar] == self.minority])
         
-        # explodes design matrix if included
-        assert "client_id" not in self.xvars, "client_id shouldn't be a covariate! Please set exclude=['client_id']"
-
-
     def fit_scores(self, balance=True, nmodels=None):
         """
         Args:
@@ -81,7 +69,8 @@ class Matcher:
                 nmodels = int(np.ceil((len(major) / len(minor)) / 10) * 10)
             self.nmodels = nmodels
             i = 0
-            while i < nmodels:
+            errors = 0
+            while i < nmodels and errors < 5:
                 uf.progress(i+1, nmodels, 
                          prestr="Fitting {} Models on Balanced Samples...".format(nmodels))
                 
@@ -100,7 +89,9 @@ class Matcher:
                     self.models.append(res)
                     i += 1
                 except Exception as e:
+                    errors += 1 # to avoid infinite loop for misspecified matrix
                     print 'Error: {}'.format(e)
+
             print "\nAverage Accuracy:", "{}%".\
                   format(round(np.mean(self.model_accurracy) * 100, 2))
         else:
@@ -292,6 +283,7 @@ class Matcher:
                 test_results_i = self.prop_test(col)
                 test_results.append(test_results_i)
                 
+                # plotting
                 df.plot.bar(alpha=.8)
                 plt.title(title_str.format(col, test_results_i["before"], test_results_i["after"]))
                 lim = max(.09, abs(df).max().max()) + .01
