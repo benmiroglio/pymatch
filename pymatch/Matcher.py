@@ -13,92 +13,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-def _chi2_distance(tb, cb):
-    dist = 0
-    for b in np.union1d(tb.keys(), cb.keys()):
-        if b not in tb:
-            tb[b] = 0
-        if b not in cb:
-            cb[b] = 0
-        xi, yi = tb[b], cb[b]
-        dist += ((xi - yi) ** 2) / (xi + yi)
-    return dist/2
-
-def chi2_distance(t, c):
-    tb, cb, bins = which_bin_hist(t, c)
-    tb, cb = bin_hist(tb, cb, bins)
-    return _chi2_distance(tb,cb)
-    
-
-def which_bin_hist(t, c):
-    comb = np.concatenate((t, c))
-    bins =np.arange(np.percentile(comb , 99), step=10)
-    t_binned = np.digitize(t, bins)
-    c_binned = np.digitize(c, bins)
-    return t_binned, c_binned, bins
-
-def bin_hist(t, c, bins):
-    tc, cc = Counter(t), Counter(c)
-    def idx_to_value(d, bins):
-        result = {}
-        for k, v, in d.items():
-            result[int(bins[k-1])] = v
-        return result
-    return idx_to_value(tc, bins), idx_to_value(cc, bins)
-
-def grouped_permutation_test(f, t, c, n_samples=1000):
-    truth = f(t, c)
-    comb = np.concatenate((t, c))
-    times_geq=0
-    samp_arr = []
-    for i in range(n_samples):
-        tn = len(t)
-        combs = comb[:]
-        np.random.shuffle(combs)
-        tt = combs[:tn]
-        cc = combs[tn:]
-        sample_truth = f(np.array(tt), np.array(cc))
-        if sample_truth >= truth:
-            times_geq += 1
-        samp_arr.append(sample_truth)
-    return times_geq / n_samples, truth
-
-def std_diff(a, b):
-    sd = np.std(a.append(b))
-    med = (np.median(a) - np.median(b)) / sd
-    mean = (np.mean(a) - np.mean(b)) / sd
-    return med, mean
-
-def progress(i, n, prestr=''):
-    sys.stdout.write('\r{}{}%'.format(prestr, round(i / n * 100, 2)))
-    
-def is_continuous(colname, dmatrix):
-    '''
-    Check if the colname was treated as continuous in the patsy.dmatrix
-    Would look like colname[<factor_value>] otherwise
-    '''
-    return colname in dmatrix.columns
-
-def ks_boot(tr, co, nboots=1000):
-    nx = len(tr)
-    ny = len(co)
-    w = np.concatenate((tr, co))
-    obs = len(w)
-    cutp = nx
-    ks_boot_pval = None
-    bbcount = 0
-    ss = []
-    fs_ks, _ = stats.ks_2samp(tr, co)
-    for bb in range(nboots):
-        sw = np.random.choice(w, obs, replace=True)
-        x1tmp = sw[:cutp]
-        x2tmp = sw[cutp:]
-        s_ks, _ = stats.ks_2samp(x1tmp, x2tmp)
-        ss.append(s_ks)
-        if s_ks >= fs_ks:
-            bbcount += 1
-    ks_boot_pval = bbcount / nboots
-    return ks_boot_pval
 
 class Matcher:
     '''
@@ -114,7 +28,8 @@ class Matcher:
             Useful for unique idenifiers
     '''
     def __init__(self, test, control, yvar, formula=None, exclude=[]):
-        
+        self.control_color = "#1F77B4"
+        self.test_color = "#FF7F0E"
         self.yvar = yvar
         self.exclude = exclude + [self.yvar] + ['scores', 'match_id']
         self.formula = formula
@@ -125,7 +40,7 @@ class Matcher:
         # and combine test and control
         t, c = [i.copy().reset_index(drop=True) for i in (test, control)]
         c.index += len(t)
-        self.data = t.dropna(axis=1, how='all').append(c.dropna(axis=1, how='all')).dropna()
+        self.data = t.append(c).dropna(axis=1, how="all")
         # should be binary 0, 1
         self.data[yvar] = self.data[yvar].astype(int)
         self.xvars = [i for i in self.data.columns if i not in self.exclude and i != yvar]
@@ -163,6 +78,11 @@ class Matcher:
             nmodels (int): How many models should be fit?
                 Score becomes the average of the <nmodels> models if nmodels > 1
         """
+        # reset models if refitting
+        if len(self.models) > 0:
+            self.models = []
+        if len(self.model_accurracy) > 0:
+            self.model_accurracy = []
         if not self.formula:
             # use all columns in the model
             self.formula = '{} ~ {}'.format(self.yvar, '+'.join(self.xvars))
@@ -172,7 +92,8 @@ class Matcher:
                 minor, major = [self.data[self.data[self.yvar] == i] for i in (self.minority, self.majority)]
                 nmodels = int(np.ceil((len(major) / len(minor)) / 10) * 10)
             self.nmodels = nmodels
-            for i in range(nmodels):
+            i = 0
+            while i < nmodels:
                 progress(i+1, nmodels, 
                          prestr="Fitting {} Models on Balanced Samples...".format(nmodels))
                 
@@ -185,9 +106,13 @@ class Matcher:
                 X_samp.drop(self.yvar, axis=1, errors='ignore', inplace=True)
                 
                 glm = GLM(y_samp, X_samp, family=sm.families.Binomial())
-                res = glm.fit()
-                self.model_accurracy.append(self._scores_to_accuracy(res, X_samp, y_samp))
-                self.models.append(res)
+                try:
+                    res = glm.fit()
+                    self.model_accurracy.append(self._scores_to_accuracy(res, X_samp, y_samp))
+                    self.models.append(res)
+                    i += 1
+                except Exception as e:
+                    print 'Error: {}'.format(e)
             print "\nAverage Accuracy:", "{}%".\
                   format(round(np.mean(self.model_accurracy) * 100, 2))
         else:
@@ -211,7 +136,7 @@ class Matcher:
             scores += m.predict(self.X[m.params.index])
         self.data['scores'] = scores/self.nmodels
         
-    def match(self, threshold=0.001, nmatches=1, tie_strategy='random', max_rand=10):
+    def match(self, threshold=0.001, nmatches=1, method='min', max_rand=10):
         """
         Match data
         
@@ -220,7 +145,7 @@ class Matcher:
                 i.e. |score_x - score_y| >= theshold
             nmatches (int): How control profiles should be matched
                 (at most) to test
-            tie_stratgey (str): Strategy for when multiple control profiles
+            method (str): Strategy for when multiple control profiles
                 are suitable matches for a single test profile
                 "random" - choose randomly
                 "min" - choose the profile with the closest score
@@ -237,17 +162,17 @@ class Matcher:
             progress(i+1, len(test_scores), 'Matching Control to Test...')
             match_id = i
             score = test_scores.iloc[i]
-            if tie_strategy == 'random':
+            if method == 'random':
                 bool_match = abs(ctrl_scores - score) <= threshold
                 matches = ctrl_scores.loc[bool_match[bool_match.scores].index]
-            elif tie_strategy == 'min':
+            elif method == 'min':
                 matches = abs(ctrl_scores - score).sort_values('scores').head(1)
             else:
                 raise AssertionError, "Invalid tie_strategy parameter, use ('random', 'min')"
             if len(matches) == 0:
                 continue
             # randomly choose nmatches indices, if len(matches) > nmatches
-            select = nmatches if tie_strategy != 'random' else np.random.choice(range(1, max_rand+1), 1)
+            select = nmatches if method != 'random' else np.random.choice(range(1, max_rand+1), 1)
             chosen = np.random.choice(matches.index, min(select, nmatches), replace=False)
             result.extend([test_scores.index[i]] + list(chosen))
             match_ids.extend([i] * (len(chosen)+1))
@@ -271,34 +196,10 @@ class Matcher:
         sns.distplot(self.data[self.data[self.yvar]==False].scores, label='Control')
         sns.distplot(self.data[self.data[self.yvar]==True].scores, label='Test')
         plt.legend(loc='upper right')
-        
-        
-    def ks_by_column(self):
-        def split_and_test(data, column):
-            ctest = data[data[self.yvar] == True][column]
-            cctrl = data[data[self.yvar] == False][column]
-            return ks_boot(ctest, cctrl, nboots=500)
-        
-        data = []
-        #assert len(self.matched_data) > 0, 'Data has not been matched, use Matcher.match()'
-        for column in self.data.columns:
-                if column not in self.exclude and is_continuous(column, self.X):
-                    pval_before = split_and_test(self.data, column)
-                    pval_after = split_and_test(self.matched_data, column)
-                    
-                    data.append({'var': column, 
-                                 'p_before': round(pval_before, 6), 
-                                 'p_after': round(pval_after, 6)})
-        return pd.DataFrame(data)[['var', 'p_before', 'p_after']]
-    
-        
-    def prop_test_by_column(self):
-        ret = []
-        for col in self.matched_data.columns:
-            if not is_continuous(col, self.X) and col not in self.exclude:
-                ret.append(self.prop_test(col))
-        return pd.DataFrame(ret)[["var", "before", "after"]]
-
+        plt.xlim((0, 1))
+        plt.title("Propensity Scores Before Matching")
+        plt.ylabel("Percentage (%)")
+        plt.xlabel("Scores")
 
             
     def prop_test(self, col):
@@ -309,9 +210,11 @@ class Matcher:
         else:
             print "{} is a continuous variable".format(col)
                     
-    def plot_ecdfs(self):
+    def compare_continuous(self, save=False, return_table=False):
+        test_results = []
         for col in self.matched_data.columns:
             if is_continuous(col, self.X) and col not in self.exclude:
+                if save: pp = PdfPages("{}-ecdf.pdf".format(col))
                 # organize data
                 trb, cob = self.test[col], self.control[col]
                 tra = self.matched_data[self.matched_data[self.yvar]==True][col]
@@ -329,31 +232,56 @@ class Matcher:
                 
                 # plotting
                 f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, sharex=True, figsize=(12, 5))
-                ax1.plot(xcb.x, xcb.y, label='Control')
-                ax1.plot(xtb.x, xtb.y, label='Test')
-                ax1.plot(xcb.x, xcb.y, label='Control')
-                ax1.plot(xtb.x, xtb.y, label='Test')
+                ax1.plot(xcb.x, xcb.y, label='Control', color=self.control_color)
+                ax1.plot(xtb.x, xtb.y, label='Test', color=self.test_color)
+                ax1.plot(xcb.x, xcb.y, label='Control', color=self.control_color)
+                ax1.plot(xtb.x, xtb.y, label='Test', color=self.test_color)
                     
                 title_str = '''
-                ECDF for {} before Matching
+                ECDF for {} {} Matching
                 KS p-value: {}
                 Grouped Perm p-value: {}
                 Std. Median Difference: {}
                 Std. Mean Difference: {}
                 '''
                 ax1.set_title(title_str\
-                  .format(col, ksb, pb, std_diff_med_before, std_diff_mean_before))
+                  .format(col, "before", ksb, pb, std_diff_med_before, std_diff_mean_before))
                 ax2.plot(xca.x, xca.y, label='Control')
                 ax2.plot(xta.x, xta.y, label='Test')
                 ax2.set_title(title_str\
-                  .format(col, ksa, pa, std_diff_med_after, std_diff_mean_after))
-                ax2.legend(bbox_to_anchor=(1.4, 1.03))
-
+                  .format(col, "after", ksa, pa, std_diff_med_after, std_diff_mean_after))
+                ax2.legend(loc="lower right")
                 plt.xlim((0, np.percentile(xta.x, 99)))
                 
-    def plot_bars(self):
+                test_results.append({
+                        "var": col,
+                        "ks_before": ksb,
+                        "ks_after": ksa,
+                        "perm_chisqr_before": pb,
+                        "grouped_chisqr_after": pa,
+                        "std_median_diff_before": std_diff_med_before,
+                        "std_median_diff_after": std_diff_med_after,
+                        "std_mean_diff_before": std_diff_mean_before,
+                        "std_mean_diff_after": std_diff_mean_after
+                    })
+                
+                if save: pp.savefig()
+        
+        var_order=["var",
+        "ks_before",
+        "ks_after",
+        "perm_chisqr_before",
+        "grouped_chisqr_after",
+        "std_median_diff_before",
+        "std_median_diff_after",
+        "std_mean_diff_before",
+        "std_mean_diff_after"]
+        if save: pp.close()
+        return pd.DataFrame(test_results)[var_order] if return_table else None
+                
+    def compare_discrete(self, return_table=False):
         def prep_plot(data, var, colname):
-            t, c = data[data[self.yvar]==True], data[data[self.yvar]==False]
+            t, c = data[data[self.yvar]==1], data[data[self.yvar]==0]
             #dummy var for counting
             dummy = [i for i in t.columns if i != var][0]
             countt = t[[var, dummy]].groupby(var).count() / len(t)
@@ -361,27 +289,38 @@ class Matcher:
             ret = (countt-countc).dropna()
             ret.columns = [colname]
             return ret
-
+        
+        title_str = '''
+        Proportional Difference (test-control) for {} Before and After Matching
+        Chi-Square Test for Independence p-value before | after:
+        {} | {}
+        '''
+        test_results = []
         for col in self.matched_data.columns:
             if not is_continuous(col, self.X) and col not in self.exclude:
-                dbefore = prep_plot(self.data, col, colname='before')
-                dafter = prep_plot(self.matched_data, col, colname='after')
-
-                dbefore.join(dafter).plot.bar(alpha=.8)
-                plt.title('Proportional Difference (test - control)')
-                plt.ylim((-.1, .1))
+                dbefore = prep_plot(self.data, col, colname="before")
+                dafter = prep_plot(self.matched_data, col, colname="after")
+                df = dbefore.join(dafter)
+                test_results_i = self.prop_test(col)
+                test_results.append(test_results_i)
+                
+                df.plot.bar(alpha=.8)
+                plt.title(title_str.format(col, test_results_i["before"], test_results_i["after"]))
+                lim = max(.09, abs(df).max().max()) + .01
+                plt.ylim((-lim, lim))
+        return pd.Dataframe(test_results)[['var', 'before', 'after']] if return_table else None
+                
 
     def prep_prop_test(self, data, var):
-        print var
         counts = data.groupby([var, self.yvar]).count().reset_index()
         table = []
         for t in (0, 1):
-            os_counts = counts[counts.treatment==t]\
+            os_counts = counts[counts[self.yvar] ==t]\
                                      .sort_values(var)
             cdict = {}
             for row in os_counts.iterrows():
                 row = row[1]
-                cdict[row[var]] = row.client_id
+                cdict[row[var]] = row[2]
             table.append(cdict)
         # fill empty keys as 0
         all_keys = set(chain.from_iterable(table))
@@ -429,4 +368,77 @@ class Matcher:
                 bbcount += 1
         ks_boot_pval = bbcount / nboots
         return ks_boot_pval
-    
+
+    @staticmethod
+    def _chi2_distance(tb, cb):
+        dist = 0
+        for b in np.union1d(tb.keys(), cb.keys()):
+            if b not in tb:
+                tb[b] = 0
+            if b not in cb:
+                cb[b] = 0
+            xi, yi = tb[b], cb[b]
+            dist += ((xi - yi) ** 2) / (xi + yi)
+        return dist/2
+
+    @staticmethod
+    def chi2_distance(t, c):
+        tb, cb, bins = which_bin_hist(t, c)
+        tb, cb = bin_hist(tb, cb, bins)
+        return _chi2_distance(tb,cb)
+        
+    @staticmethod
+    def which_bin_hist(t, c):
+        comb = np.concatenate((t, c))
+        bins =np.arange(np.percentile(comb , 99), step=10)
+        t_binned = np.digitize(t, bins)
+        c_binned = np.digitize(c, bins)
+        return t_binned, c_binned, bins
+
+    @staticmethod
+    def bin_hist(t, c, bins):
+        tc, cc = Counter(t), Counter(c)
+        def idx_to_value(d, bins):
+            result = {}
+            for k, v, in d.items():
+                result[int(bins[k-1])] = v
+            return result
+        return idx_to_value(tc, bins), idx_to_value(cc, bins)
+
+    @staticmethod
+    def grouped_permutation_test(f, t, c, n_samples=1000):
+        truth = f(t, c)
+        comb = np.concatenate((t, c))
+        times_geq=0
+        samp_arr = []
+        for i in range(n_samples):
+            tn = len(t)
+            combs = comb[:]
+            np.random.shuffle(combs)
+            tt = combs[:tn]
+            cc = combs[tn:]
+            sample_truth = f(np.array(tt), np.array(cc))
+            if sample_truth >= truth:
+                times_geq += 1
+            samp_arr.append(sample_truth)
+        return times_geq / n_samples, truth
+        
+    @staticmethod
+    def std_diff(a, b):
+        sd = np.std(a.append(b))
+        med = (np.median(a) - np.median(b)) / sd
+        mean = (np.mean(a) - np.mean(b)) / sd
+        return med, mean
+
+    @staticmethod
+    def progress(i, n, prestr=''):
+        sys.stdout.write('\r{}{}%'.format(prestr, round(i / n * 100, 2)))
+
+    @staticmethod 
+    def is_continuous(colname, dmatrix):
+        '''
+        Check if the colname was treated as continuous in the patsy.dmatrix
+        Would look like colname[<factor_value>] otherwise
+        '''
+        return colname in dmatrix.columns
+        
