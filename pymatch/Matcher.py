@@ -504,6 +504,7 @@ class Matcher:
         record_freqs.columns = ["record_id", "weight"]
         fm = record_freqs.merge(self.matched_data, on="record_id")
         fm['weight'] = 1/fm['weight']
+        self.matched_data = fm.merge(self.matched_data, on="record_id")
 
         
     def _scores_to_accuracy(self, m, X, y):
