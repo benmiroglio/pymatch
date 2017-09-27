@@ -134,7 +134,6 @@ class Matcher:
         """
         scores = np.zeros(len(self.X))
         for i in range(self.nmodels):
-            uf.progress(i+1, self.nmodels, "Caclculating Propensity Scores...")
             m = self.models[i]
             scores += m.predict(self.X[m.params.index])
         self.data['scores'] = scores/self.nmodels
@@ -185,7 +184,7 @@ class Matcher:
             elif method == 'min':
                 matches = abs(ctrl_scores - score).sort_values('scores').head(nmatches)
             else:
-                raise AssertionError, "Invalid tie_strategy parameter, use ('random', 'min')"
+                raise AssertionError, "Invalid method parameter, use ('random', 'min')"
             if len(matches) == 0:
                 continue
             # randomly choose nmatches indices, if len(matches) > nmatches
