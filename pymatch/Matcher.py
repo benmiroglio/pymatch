@@ -25,7 +25,7 @@ class Matcher:
         # configure plots for ipynb
         plt.rcParams["figure.figsize"] = (10, 5)
         # variables generated during matching
-        aux_match = ['scores', 'match_id', 'weights', 'record_id']
+        aux_match = ['scores', 'match_id', 'weight', 'record_id']
         # assign unique indices to test and control 
         t, c = [i.copy().reset_index(drop=True) for i in (test, control)]
         c.index += len(t)
@@ -380,7 +380,7 @@ class Matcher:
             t, c = data[data[self.yvar]==1], data[data[self.yvar]==0]
             #dummy var for counting
             dummy = [i for i in t.columns if i not in \
-                      (var, "match_id", "record_id", "weights")][0]
+                      (var, "match_id", "record_id", "weight")][0]
             countt = t[[var, dummy]].groupby(var).count() / len(t)
             countc = c[[var, dummy]].groupby(var).count() / len(c)
             ret = (countt-countc).dropna()
