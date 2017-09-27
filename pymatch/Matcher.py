@@ -183,7 +183,7 @@ class Matcher:
                 bool_match = abs(ctrl_scores - score) <= threshold
                 matches = ctrl_scores.loc[bool_match[bool_match.scores].index]
             elif method == 'min':
-                matches = abs(ctrl_scores - score).sort_values('scores').head(1)
+                matches = abs(ctrl_scores - score).sort_values('scores').head(nmatches)
             else:
                 raise AssertionError, "Invalid tie_strategy parameter, use ('random', 'min')"
             if len(matches) == 0:
@@ -258,7 +258,7 @@ class Matcher:
         are (we want them to be close after matching). 
 
         Tests performed:
-        Kologorov-Smirnov Goodness of fit Test (KS-test)
+        Kolmogorov-Smirnov Goodness of fit Test (KS-test)
             This test statistic is calculated on 1000
             permuted samples of the data, generating
             an imperical p-value.  See pymatch.functions.ks_boot()
@@ -333,7 +333,7 @@ class Matcher:
                         "var": col,
                         "ks_before": ksb,
                         "ks_after": ksa,
-                        "perm_chisqr_before": pb,
+                        "grouped_chisqr_before": pb,
                         "grouped_chisqr_after": pa,
                         "std_median_diff_before": std_diff_med_before,
                         "std_median_diff_after": std_diff_med_after,
@@ -345,7 +345,7 @@ class Matcher:
         var_order=["var",
         "ks_before",
         "ks_after",
-        "perm_chisqr_before",
+        "grouped_chisqr_before",
         "grouped_chisqr_after",
         "std_median_diff_before",
         "std_median_diff_after",
