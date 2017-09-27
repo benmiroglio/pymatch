@@ -24,6 +24,8 @@ class Matcher:
     def __init__(self, test, control, yvar, formula=None, exclude=[]):  
         # configure plots for ipynb
         plt.rcParams["figure.figsize"] = (10, 5)
+        # variables generated during matching
+        aux_match = ['scores', 'match_id', 'weights', 'record_id']
         # assign unique indices to test and control 
         t, c = [i.copy().reset_index(drop=True) for i in (test, control)]
         c.index += len(t)
@@ -31,7 +33,7 @@ class Matcher:
         self.control_color = "#1F77B4"
         self.test_color = "#FF7F0E"
         self.yvar = yvar
-        self.exclude = exclude + [self.yvar] + ['scores', 'match_id']
+        self.exclude = exclude + [self.yvar] + aux_match
         self.formula = formula
         self.models = []
         self.swdata = None
