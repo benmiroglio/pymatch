@@ -377,7 +377,8 @@ class Matcher:
         def prep_plot(data, var, colname):
             t, c = data[data[self.yvar]==1], data[data[self.yvar]==0]
             #dummy var for counting
-            dummy = [i for i in t.columns if i != var][0]
+            dummy = [i for i in t.columns if i not in \
+                      (var, "match_id", "record_id", "weights")][0]
             countt = t[[var, dummy]].groupby(var).count() / len(t)
             countc = c[[var, dummy]].groupby(var).count() / len(c)
             ret = (countt-countc).dropna()
