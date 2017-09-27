@@ -173,7 +173,7 @@ m.record_frequency()
 
 
 
-<div>
+
 
 <table border="1" class="dataframe">
   <thead>
@@ -206,7 +206,7 @@ m.record_frequency()
     </tr>
   </tbody>
 </table>
-</div>
+
 
 
 
@@ -227,7 +227,7 @@ m.matched_data.sort_values("match_id").head(6)
 
 
 
-<div>
+
 
 <table border="1" class="dataframe">
   <thead>
@@ -347,7 +347,7 @@ m.matched_data.sort_values("match_id").head(6)
     </tr>
   </tbody>
 </table>
-</div>
+
 
 
 
@@ -391,7 +391,7 @@ discrete_results
 
 
 
-<div>
+
 
 <table border="1" class="dataframe">
   <thead>
@@ -423,7 +423,7 @@ discrete_results
     </tr>
   </tbody>
 </table>
-</div>
+
 
 
 
@@ -488,7 +488,7 @@ cc
 
 
 
-<div>
+
 
 <table border="1" class="dataframe">
   <thead>
@@ -568,7 +568,7 @@ cc
     </tr>
   </tbody>
 </table>
-</div>
+
 
 
 
