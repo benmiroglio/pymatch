@@ -27,13 +27,11 @@ class Matcher:
         # assign unique indices to test and control 
         t, c = [i.copy().reset_index(drop=True) for i in (test, control)]
         c.index += len(t)
-        t['record_id'] = t.index
-        c['record_id'] = c.index
         self.data = t.append(c).dropna(axis=1, how="all")
         self.control_color = "#1F77B4"
         self.test_color = "#FF7F0E"
         self.yvar = yvar
-        self.exclude = exclude + [self.yvar] + ['scores', 'match_id', 'record_id']
+        self.exclude = exclude + [self.yvar] + ['scores', 'match_id']
         self.formula = formula
         self.models = []
         self.swdata = None
@@ -194,7 +192,8 @@ class Matcher:
             result.extend([test_scores.index[i]] + list(chosen))
             match_ids.extend([i] * (len(chosen)+1))
         self.matched_data = self.data.loc[result]
-        self.matched_data['match_id'] = match_ids  
+        self.matched_data['match_id'] = match_ids
+        self.matched_data['record_id'] = self.matched_data.index 
         
     def select_from_design(self, cols):
         d = pd.DataFrame()
@@ -481,6 +480,30 @@ class Matcher:
         plt.ylabel("Proportion Retained")
         plt.xlabel("Threshold")
         plt.xticks(rng)
+
+    def record_frequency(self):
+        """ 
+        Calculates the frequency of specifi records in 
+        the matched dataset
+
+        Returns
+        -------
+        pd.DataFrame()
+            Frequency table of the number records
+            matched once, twice, ..., etc.
+        """
+        freqs = self.matched_data.groupby("record_id")\
+                    .count().groupby("match_id").count()\
+                    [["scores"]].reset_index()
+        freqs.columns = ["freq", "n_records"]
+        return freqs
+
+    def assign_weight_vector(self):
+        record_freqs = self.matched_data.groupby("record_id")\
+                           .count()[['match_id']].reset_index()
+        record_freqs.columns = ["record_id", "weight"]
+        fm = record_freqs.merge(self.matched_data, on="record_id")
+        fm['weight'] = 1/fm['weight']
 
         
     def _scores_to_accuracy(self, m, X, y):
