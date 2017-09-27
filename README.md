@@ -12,7 +12,7 @@ The best way to get familiar with the package is to work through an example. The
 
 # Example
 
-The following example demonstrates how to the use the `pymatch` package to match [Lending Club Loan Data](https://www.kaggle.com/wendykan/lending-club-loan-data). Follow the link to download the dataset from Kaggle (you'll have to create an account, it's fast and free!).
+The following example demonstrates how to the use the `pymatch` package to match [Lending Club Loan Data](https://www.kaggle.com/wendykan/lending-club-loan-data). Follow the link to download the dataset from Kaggle (you'll have to create an account, it's fast and free!). You can follow along this document or download the corresponding [Example.ipynb](https://github.com/benmiroglio/pymatch/blob/master/Example.ipynb) notebook (just be sure to change the path when loading data!).
 
 Here we match Lending Club users that fully paid off loans (control) to those that defaulted (test). The example is contrived, however a use case for this could be that we want to analyze user sentiment with the platform. Users that default on loans may have worse sentiment because they are predisposed to a bad situation--influencing their perception of the product. Before analyzing sentiment, we can match users that paid their loans in full to users that defaulted based on the characteristics we can observe. If matching is successful, we could then make a statement about the **causal effect** defaulting has on sentiment if we are confident our samples are sufficiently balanced and our model is free from omitted variable bias.
 
@@ -174,19 +174,7 @@ m.record_frequency()
 
 
 <div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
 
-    .dataframe thead th {
-        text-align: left;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -240,19 +228,7 @@ m.matched_data.sort_values("match_id").head(6)
 
 
 <div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
 
-    .dataframe thead th {
-        text-align: left;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -416,19 +392,7 @@ discrete_results
 
 
 <div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
 
-    .dataframe thead th {
-        text-align: left;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -525,19 +489,7 @@ cc
 
 
 <div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
 
-    .dataframe thead th {
-        text-align: left;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
