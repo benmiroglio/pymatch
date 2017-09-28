@@ -355,11 +355,11 @@ m.matched_data.sort_values("match_id").head(6)
 
 ### Assess Matches
 
-We must now determine if our data is "balanced" across our covariates. Can we detect any statistical differences between the covariates of our matched test and control groups? `Matcher` is configured to treat discrete and continuous variables separately in this assessment.
+We must now determine if our data is "balanced" across our covariates. Can we detect any statistical differences between the covariates of our matched test and control groups? `Matcher` is configured to treat categorical and continuous variables separately in this assessment.
 
-___Discrete___
+___categorical___
 
-For discrete variables, we look at plots comparing the proportional differences between test and control before and after matching. 
+For categorical variables, we look at plots comparing the proportional differences between test and control before and after matching. 
 
 For example, the first plot shows:
 
@@ -368,7 +368,7 @@ For example, the first plot shows:
 
 
 ```python
-discrete_results = m.compare_discrete(return_table=True)
+categorical_results = m.compare_categorical(return_table=True)
 ```
 
 
@@ -385,7 +385,7 @@ discrete_results = m.compare_discrete(return_table=True)
 
 
 ```python
-discrete_results
+categorical_results
 ```
 
 
@@ -427,7 +427,7 @@ discrete_results
 
 
 
-Looking at the plots and test results, we did a pretty good job balancing our discrete features! The p-values from the Chi-Square tests are all > 0.05 and we can verify by observing the small proportional differences in the plots.
+Looking at the plots and test results, we did a pretty good job balancing our categorical features! The p-values from the Chi-Square tests are all > 0.05 and we can verify by observing the small proportional differences in the plots.
 
 ___Continuous___
 
