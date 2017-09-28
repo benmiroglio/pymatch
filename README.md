@@ -21,7 +21,7 @@ This example, however, only goes through the matching procedure, which can be br
 * [Data Preparation](#data-prep)
 * [Fit Propensity Score Models](#matcher)
 * [Predict Propensity Scores](#predict-scores)
-* [Tune Threshold](#tune-Threshold)
+* [Tune Threshold](#tune-threshold)
 * [Match Data](#match-data)
 * [Assess Matches](#assess-matches)
 
