@@ -8,6 +8,16 @@ Matching techniques for observational studies. Inspired by and adapted from Jasj
 * Additional Non-Parametric Tests / Plotting Functionality to assess balance.
 * A more modular, user-specified matching process 
 
+# Installation
+
+Install through pip!
+
+```bash
+$ pip install pymatch
+```
+
+-----
+
 The best way to get familiar with the package is to work through an example. The example below leaves out much of the theory behind matching and focuses on the application within `pymatch`. If interested, Sekhon gives a nice overview in his [Introduction to the Matching package in R](http://sekhon.berkeley.edu/papers/MatchingJSS.pdf).
 
 # Example
