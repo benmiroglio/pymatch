@@ -18,12 +18,12 @@ Here we match Lending Club users that fully paid off loans (control) to those th
 
 This example, however, only goes through the matching procedure, which can be broken down into the following steps:
 
-* [Data Preparation](#Data-Prep)
-* [Fit Propensity Score Models](#Matcher)
-* [Predict Propensity Scores](#Predict-Scores)
-* [Tune Threshold](#Tune-Threshold)
-* [Match Data](#Match-Data)
-* [Assess Matches](#Assess-Matches)
+* [Data Preparation](#data-prep)
+* [Fit Propensity Score Models](#matcher)
+* [Predict Propensity Scores](#predict-scores)
+* [Tune Threshold](#tune-Threshold)
+* [Match Data](#match-data)
+* [Assess Matches](#assess-matches)
 
 ----
 
