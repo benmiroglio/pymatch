@@ -8,6 +8,16 @@ Matching techniques for observational studies. Inspired by and adapted from Jasj
 * Additional Non-Parametric Tests / Plotting Functionality to assess balance.
 * A more modular, user-specified matching process 
 
+# Installation
+
+Install through pip!
+
+```bash
+$ pip install pymatch
+```
+
+# 
+
 The best way to get familiar with the package is to work through an example. The example below leaves out much of the theory behind matching and focuses on the application within `pymatch`. If interested, Sekhon gives a nice overview in his [Introduction to the Matching package in R](http://sekhon.berkeley.edu/papers/MatchingJSS.pdf).
 
 # Example
@@ -18,12 +28,12 @@ Here we match Lending Club users that fully paid off loans (control) to those th
 
 This example, however, only goes through the matching procedure, which can be broken down into the following steps:
 
-* [Data Preparation](#Data-Prep)
-* [Fit Propensity Score Models](#Matcher)
-* [Predict Propensity Scores](#Predict-Scores)
-* [Tune Threshold](#Tune-Threshold)
-* [Match Data](#Match-Data)
-* [Assess Matches](#Assess-Matches)
+* [Data Preparation](#data-prep)
+* [Fit Propensity Score Models](#matcher)
+* [Predict Propensity Scores](#predict-scores)
+* [Tune Threshold](#tune-threshold)
+* [Match Data](#match-data)
+* [Assess Matches](#assess-matches)
 
 ----
 
