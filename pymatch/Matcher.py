@@ -31,7 +31,7 @@ class Matcher:
         t = t.dropna(axis=1, how="all")
         c = c.dropna(axis=1, how="all")
         c.index += len(t)
-        self.data = t.append(c).dropna(axis=1, how="any")
+        self.data = t.dropna(axis=1, how='all').append(c.dropna(axis=1, how='all')).dropna()
         self.control_color = "#1F77B4"
         self.test_color = "#FF7F0E"
         self.yvar = yvar
