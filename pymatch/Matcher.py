@@ -354,7 +354,7 @@ class Matcher:
         "std_mean_diff_after"]
         return pd.DataFrame(test_results)[var_order] if return_table else None
                 
-    def compare_discrete(self, return_table=False):
+    def compare_categorical(self, return_table=False):
         """
         Plots the proportional differences of each enumerated
         discete column for test and control.
