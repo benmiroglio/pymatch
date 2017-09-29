@@ -214,8 +214,8 @@ class Matcher:
         our test and control groups
         """
         assert 'scores' in self.data.columns, "Propensity scores haven't been calculated, use Matcher.predict_scores()"
-        sns.distplot(self.data[self.data[self.yvar]==False].scores, label='Control')
-        sns.distplot(self.data[self.data[self.yvar]==True].scores, label='Test')
+        sns.distplot(self.data[self.data[self.yvar]==0].scores, label='Control')
+        sns.distplot(self.data[self.data[self.yvar]==1].scores, label='Test')
         plt.legend(loc='upper right')
         plt.xlim((0, 1))
         plt.title("Propensity Scores Before Matching")
