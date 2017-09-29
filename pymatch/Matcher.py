@@ -28,8 +28,10 @@ class Matcher:
         aux_match = ['scores', 'match_id', 'weight', 'record_id']
         # assign unique indices to test and control 
         t, c = [i.copy().reset_index(drop=True) for i in (test, control)]
+        t = t.dropna(axis=1, how="all")
+        c = c.dropna(axis=1, how="all")
         c.index += len(t)
-        self.data = t.append(c).dropna(axis=1, how="all")
+        self.data = t.append(c).dropna(axis=1, how="any")
         self.control_color = "#1F77B4"
         self.test_color = "#FF7F0E"
         self.yvar = yvar
