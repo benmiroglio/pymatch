@@ -22,8 +22,8 @@ class Matcher:
     '''
 
     def __init__(self, test, control, yvar, formula=None, exclude=[]):  
-        # configure plots for ipynb
-        plt.rcParams["figure.figsize"] = (10, 5)
+        # # configure plots for ipynb
+        # plt.rcParams["figure.figsize"] = (10, 5)
         # variables generated during matching
         aux_match = ['scores', 'match_id', 'weight', 'record_id']
         # assign unique indices to test and control 
@@ -210,19 +210,19 @@ class Matcher:
         minor, major = data[data[self.yvar] == self.minority], data[data[self.yvar] == self.majority]
         return major.sample(len(minor)).append(minor).dropna()
 
-    def plot_scores(self):
-        """
-        Plots the distribution of propensity scores before matching between
-        our test and control groups
-        """
-        assert 'scores' in self.data.columns, "Propensity scores haven't been calculated, use Matcher.predict_scores()"
-        sns.distplot(self.data[self.data[self.yvar]==0].scores, label='Control')
-        sns.distplot(self.data[self.data[self.yvar]==1].scores, label='Test')
-        plt.legend(loc='upper right')
-        plt.xlim((0, 1))
-        plt.title("Propensity Scores Before Matching")
-        plt.ylabel("Percentage (%)")
-        plt.xlabel("Scores")
+    # def plot_scores(self):
+    #     """
+    #     Plots the distribution of propensity scores before matching between
+    #     our test and control groups
+    #     """
+    #     assert 'scores' in self.data.columns, "Propensity scores haven't been calculated, use Matcher.predict_scores()"
+    #     sns.distplot(self.data[self.data[self.yvar]==0].scores, label='Control')
+    #     sns.distplot(self.data[self.data[self.yvar]==1].scores, label='Test')
+    #     plt.legend(loc='upper right')
+    #     plt.xlim((0, 1))
+    #     plt.title("Propensity Scores Before Matching")
+    #     plt.ylabel("Percentage (%)")
+    #     plt.xlabel("Scores")
 
             
     def prop_test(self, col):
@@ -307,28 +307,28 @@ class Matcher:
                 ksb = round(uf.ks_boot(trb, cob, nboots=1000), 6)
                 ksa = round(uf.ks_boot(tra, coa, nboots=1000), 6)
                 
-                # plotting
-                f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, sharex=True, figsize=(12, 5))
-                ax1.plot(xcb.x, xcb.y, label='Control', color=self.control_color)
-                ax1.plot(xtb.x, xtb.y, label='Test', color=self.test_color)
-                ax1.plot(xcb.x, xcb.y, label='Control', color=self.control_color)
-                ax1.plot(xtb.x, xtb.y, label='Test', color=self.test_color)
+                # # plotting
+                # f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, sharex=True, figsize=(12, 5))
+                # ax1.plot(xcb.x, xcb.y, label='Control', color=self.control_color)
+                # ax1.plot(xtb.x, xtb.y, label='Test', color=self.test_color)
+                # ax1.plot(xcb.x, xcb.y, label='Control', color=self.control_color)
+                # ax1.plot(xtb.x, xtb.y, label='Test', color=self.test_color)
                     
-                title_str = '''
-                ECDF for {} {} Matching
-                KS p-value: {}
-                Grouped Perm p-value: {}
-                Std. Median Difference: {}
-                Std. Mean Difference: {}
-                '''
-                ax1.set_title(title_str\
-                  .format(col, "before", ksb, pb, std_diff_med_before, std_diff_mean_before))
-                ax2.plot(xca.x, xca.y, label='Control')
-                ax2.plot(xta.x, xta.y, label='Test')
-                ax2.set_title(title_str\
-                  .format(col, "after", ksa, pa, std_diff_med_after, std_diff_mean_after))
-                ax2.legend(loc="lower right")
-                plt.xlim((0, np.percentile(xta.x, 99)))
+                # title_str = '''
+                # ECDF for {} {} Matching
+                # KS p-value: {}
+                # Grouped Perm p-value: {}
+                # Std. Median Difference: {}
+                # Std. Mean Difference: {}
+                # '''
+                # ax1.set_title(title_str\
+                #   .format(col, "before", ksb, pb, std_diff_med_before, std_diff_mean_before))
+                # ax2.plot(xca.x, xca.y, label='Control')
+                # ax2.plot(xta.x, xta.y, label='Test')
+                # ax2.set_title(title_str\
+                #   .format(col, "after", ksa, pa, std_diff_med_after, std_diff_mean_after))
+                # ax2.legend(loc="lower right")
+                # plt.xlim((0, np.percentile(xta.x, 99)))
                 
                 test_results.append({
                         "var": col,
@@ -402,11 +402,11 @@ class Matcher:
                 test_results_i = self.prop_test(col)
                 test_results.append(test_results_i)
                 
-                # plotting
-                df.plot.bar(alpha=.8)
-                plt.title(title_str.format(col, test_results_i["before"], test_results_i["after"]))
-                lim = max(.09, abs(df).max().max()) + .01
-                plt.ylim((-lim, lim))
+                # # plotting
+                # df.plot.bar(alpha=.8)
+                # plt.title(title_str.format(col, test_results_i["before"], test_results_i["after"]))
+                # lim = max(.09, abs(df).max().max()) + .01
+                # plt.ylim((-lim, lim))
         return pd.DataFrame(test_results)[['var', 'before', 'after']] if return_table else None
                 
 
@@ -479,11 +479,12 @@ class Matcher:
         for i in rng:
             self.match(method=method, nmatches=nmatches, threshold=i)
             results.append(self.prop_retained())
-        plt.plot(rng, results)
-        plt.title("Proportion of Data retained for grid of threshold values")
-        plt.ylabel("Proportion Retained")
-        plt.xlabel("Threshold")
-        plt.xticks(rng)
+        # plt.plot(rng, results)
+        # plt.title("Proportion of Data retained for grid of threshold values")
+        # plt.ylabel("Proportion Retained")
+        # plt.xlabel("Threshold")
+        # plt.xticks(rng)
+        return results
 
     def record_frequency(self):
         """ 

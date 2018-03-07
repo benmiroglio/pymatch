@@ -1,15 +1,15 @@
 from setuptools import setup, find_packages
 dependencies =[
-  'seaborn',
+  # 'seaborn',
   'statsmodels',
   'scipy',
   'patsy',
-  'matplotlib',
+  # 'matplotlib',
   'pandas', 
   'numpy'
   ]
 
-VERSION = "0.2.7"
+VERSION = "0.2.8"
 
 setup(
   name = 'pymatch',

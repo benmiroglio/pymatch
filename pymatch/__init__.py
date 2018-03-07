@@ -8,8 +8,8 @@ from itertools import chain
 import functions as uf
 import statsmodels.api as sm
 import patsy 
-import seaborn as sns
-import matplotlib.pyplot as plt
+# import seaborn as sns
+# import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import sys
