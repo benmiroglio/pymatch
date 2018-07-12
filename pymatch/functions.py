@@ -13,7 +13,7 @@ def drop_static_cols(df, yvar, cols=None):
         if n_unique == 1:
             df.drop(col, axis=1, inplace=True)
     return df
-    
+
 def ks_boot(tr, co, nboots=1000):
     nx = len(tr)
     ny = len(co)
@@ -50,7 +50,7 @@ def chi2_distance(t, c):
     tb, cb, bins = which_bin_hist(t, c)
     tb, cb = bin_hist(tb, cb, bins)
     return _chi2_distance(tb,cb)
-    
+
 def which_bin_hist(t, c):
     comb = np.concatenate((t, c))
     bins =np.arange(np.percentile(comb , 99), step=10)
@@ -92,7 +92,7 @@ def std_diff(a, b):
 
 def progress(i, n, prestr=''):
     sys.stdout.write('\r{}{}'.format(prestr, ''))
- 
+
 def is_continuous(colname, dmatrix):
     '''
     Check if the colname was treated as continuous in the patsy.dmatrix
