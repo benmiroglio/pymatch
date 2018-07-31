@@ -2,12 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2831ad30-168a-41e0-8ac4-38a110f4920a" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Example-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Example-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Example.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Example.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/lib/pymatch/Matcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/build/lib/pymatch/Matcher.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/lib/pymatch/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/build/lib/pymatch/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/lib/pymatch/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/build/lib/pymatch/functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/pymatch-0.2.8-py2.py3-none-any.whl" beforeDir="false" afterPath="$PROJECT_DIR$/dist/pymatch-0.2.8-py2.py3-none-any.whl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/pymatch-0.2.8.tar.gz" beforeDir="false" afterPath="$PROJECT_DIR$/dist/pymatch-0.2.8.tar.gz" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pymatch.egg-info/PKG-INFO" beforeDir="false" afterPath="$PROJECT_DIR$/pymatch.egg-info/PKG-INFO" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pymatch/Matcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/pymatch/Matcher.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pymatch/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/pymatch/functions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -22,8 +23,8 @@
       <file leaf-file-name="setup.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/setup.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="375">
-              <caret line="25" column="25" lean-forward="true" selection-start-line="25" selection-start-column="25" selection-end-line="25" selection-end-column="25" />
+            <state relative-caret-position="180">
+              <caret line="12" column="16" selection-start-line="12" selection-start-column="16" selection-end-line="12" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -261,8 +262,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/setup.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="25" column="25" lean-forward="true" selection-start-line="25" selection-start-column="25" selection-end-line="25" selection-end-column="25" />
+        <state relative-caret-position="180">
+          <caret line="12" column="16" selection-start-line="12" selection-start-column="16" selection-end-line="12" selection-end-column="16" />
         </state>
       </provider>
     </entry>

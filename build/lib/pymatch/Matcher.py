@@ -1,10 +1,11 @@
+from __future__ import print_function
 from pymatch import *
 import functions as uf
 
 class Matcher:
     """
     Matcher Class -- Match data for an observational study.
-    
+
     Parameters
     ----------
     test : pd.DataFrame
@@ -21,12 +22,12 @@ class Matcher:
         Useful for unique idenifiers
     """
 
-    def __init__(self, test, control, yvar, formula=None, exclude=[]):  
+    def __init__(self, test, control, yvar, formula=None, exclude=[]):
         # configure plots for ipynb
         plt.rcParams["figure.figsize"] = (10, 5)
         # variables generated during matching
         aux_match = ['scores', 'match_id', 'weight', 'record_id']
-        # assign unique indices to test and control 
+        # assign unique indices to test and control
         t, c = [i.copy().reset_index(drop=True) for i in (test, control)]
         t = t.dropna(axis=1, how="all")
         c = c.dropna(axis=1, how="all")
@@ -43,7 +44,7 @@ class Matcher:
         self.model_accuracy = []
         self.data[yvar] = self.data[yvar].astype(int)  # should be binary 0, 1
         self.xvars = [i for i in self.data.columns if i not in self.exclude and i != yvar]
-        self.matched_data = []  
+        self.matched_data = []
         self.y, self.X = patsy.dmatrices('{} ~ {}'.format(yvar, '+'.join(self.xvars)), data=self.data,
                                          return_type='dataframe')
         self.xvars = [i for i in self.data.columns if i not in self.exclude]
@@ -52,12 +53,12 @@ class Matcher:
         self.testn = len(self.test)
         self.controln = len(self.control)
         self.minority, self.majority = \
-          [i[1] for i in sorted(zip([self.testn, self.controln], [1, 0]), 
+          [i[1] for i in sorted(zip([self.testn, self.controln], [1, 0]),
                                 key=lambda x: x[0])]
-        print 'Formula:\n{} ~ {}'.format(yvar, '+'.join(self.xvars))
-        print 'n majority:', len(self.data[self.data[yvar] == self.majority])
-        print 'n minority:', len(self.data[self.data[yvar] == self.minority])
-        
+        print('Formula:\n{} ~ {}'.format(yvar, '+'.join(self.xvars)))
+        print('n majority:', len(self.data[self.data[yvar] == self.majority]))
+        print('n minority:', len(self.data[self.data[yvar] == self.minority]))
+
     def fit_scores(self, balance=True, nmodels=None):
         """
         Fits logistic regression model(s) used for
@@ -65,10 +66,10 @@ class Matcher:
 
         Parameters
         ----------
-        balance : bool 
-            Should balanced datasets be used? 
+        balance : bool
+            Should balanced datasets be used?
             (n_control == n_test)
-        nmodels : int 
+        nmodels : int
             How many models should be fit?
             Score becomes the average of the <nmodels> models if nmodels > 1
 
@@ -95,15 +96,14 @@ class Matcher:
             while i < nmodels and errors < 5:
                 uf.progress(i+1, nmodels, 
                             prestr="Fitting {} Models on Balanced Samples...".format(nmodels))
-                
+         
                 # sample from majority to create balance dataset
-                
                 df = self.balanced_sample()
-                df = pd.concat([uf.drop_static_cols(df[df[self.yvar] == 1], yvar=self.yvar), 
+                df = pd.concat([uf.drop_static_cols(df[df[self.yvar] == 1], yvar=self.yvar),
                                 uf.drop_static_cols(df[df[self.yvar] == 0], yvar=self.yvar)])
                 y_samp, X_samp = patsy.dmatrices(self.formula, data=df, return_type='dataframe')
                 X_samp.drop(self.yvar, axis=1, errors='ignore', inplace=True)
-                
+
                 glm = GLM(y_samp, X_samp, family=sm.families.Binomial())
                 try:
                     res = glm.fit()
@@ -125,6 +125,7 @@ class Matcher:
             self.models.append(res)
             print("Accuracy", round(np.mean(self.model_accuracy[0]) * 100, 2))
             
+            
     def predict_scores(self):
         """
         Predict Propensity scores for each observation.
@@ -139,7 +140,7 @@ class Matcher:
             m = self.models[i]
             scores += m.predict(self.X[m.params.index])
         self.data['scores'] = scores/self.nmodels
-        
+
     def match(self, threshold=0.001, nmatches=1, method='min', max_rand=10):
         """
         Finds suitable match(es) for each record in the minority
@@ -148,13 +149,13 @@ class Matcher:
 
         self.matched_data contains the matched dataset once this
         method is called
-        
+
         Parameters
         ----------
         threshold : float
             threshold for fuzzy matching matching
             i.e. |score_x - score_y| >= theshold
-        nmatches : int 
+        nmatches : int
             How majority profiles should be matched
             (at most) to minority profiles
         method : str
@@ -196,8 +197,8 @@ class Matcher:
             match_ids.extend([i] * (len(chosen)+1))
         self.matched_data = self.data.loc[result]
         self.matched_data['match_id'] = match_ids
-        self.matched_data['record_id'] = self.matched_data.index 
-        
+        self.matched_data['record_id'] = self.matched_data.index
+
     def select_from_design(self, cols):
         d = pd.DataFrame()
         for c in cols:
@@ -224,7 +225,6 @@ class Matcher:
         plt.ylabel("Percentage (%)")
         plt.xlabel("Scores")
 
-            
     def prop_test(self, col):
         """
         Performs a Chi-Square test of independence on <col>
@@ -238,7 +238,7 @@ class Matcher:
         Returns
         ______
         dict
-            {'var': <col>, 
+            {'var': <col>,
              'before': <pvalue before matching>,
              'after': <pvalue after matching>}
 
@@ -250,25 +250,25 @@ class Matcher:
             return {'var':col, 'before':pval_before, 'after':pval_after}
         else:
             print("{} is a continuous variable".format(col))
-                    
+   
     def compare_continuous(self, save=False, return_table=False):
         """
-        Plots the ECDFs for continuous features before and 
-        after matching. Each chart title contains test results 
+        Plots the ECDFs for continuous features before and
+        after matching. Each chart title contains test results
         and statistics to summarize how similar the two distributions
-        are (we want them to be close after matching). 
+        are (we want them to be close after matching).
 
         Tests performed:
         Kolmogorov-Smirnov Goodness of fit Test (KS-test)
             This test statistic is calculated on 1000
             permuted samples of the data, generating
             an imperical p-value.  See pymatch.functions.ks_boot()
-            This is an adaptation of the ks.boot() method in 
+            This is an adaptation of the ks.boot() method in
             the R "Matching" package
             https://www.rdocumentation.org/packages/Matching/versions/4.9-2/topics/ks.boot
         Chi-Square Distance:
-            Similarly this distance metric is calculated on 
-            1000 permuted samples. 
+            Similarly this distance metric is calculated on
+            1000 permuted samples.
             See pymatch.functions.grouped_permutation_test()
 
         Other included Stats:
@@ -298,7 +298,7 @@ class Matcher:
                 coa = self.matched_data[self.matched_data[self.yvar]==False][col]
                 xtb, xcb = ECDF(trb), ECDF(cob)
                 xta, xca = ECDF(tra),ECDF(coa)
-                
+
                 # before/after stats
                 std_diff_med_before, std_diff_mean_before = uf.std_diff(trb, cob)
                 std_diff_med_after, std_diff_mean_after = uf.std_diff(tra, coa)
@@ -306,14 +306,14 @@ class Matcher:
                 pa, trutha = uf.grouped_permutation_test(uf.chi2_distance, tra, coa)
                 ksb = round(uf.ks_boot(trb, cob, nboots=1000), 6)
                 ksa = round(uf.ks_boot(tra, coa, nboots=1000), 6)
-                
+
                 # plotting
                 f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, sharex=True, figsize=(12, 5))
                 ax1.plot(xcb.x, xcb.y, label='Control', color=self.control_color)
                 ax1.plot(xtb.x, xtb.y, label='Test', color=self.test_color)
                 ax1.plot(xcb.x, xcb.y, label='Control', color=self.control_color)
                 ax1.plot(xtb.x, xtb.y, label='Test', color=self.test_color)
-                    
+
                 title_str = '''
                 ECDF for {} {} Matching
                 KS p-value: {}
@@ -329,7 +329,7 @@ class Matcher:
                   .format(col, "after", ksa, pa, std_diff_med_after, std_diff_mean_after))
                 ax2.legend(loc="lower right")
                 plt.xlim((0, np.percentile(xta.x, 99)))
-                
+
                 test_results.append({
                         "var": col,
                         "ks_before": ksb,
@@ -342,7 +342,7 @@ class Matcher:
                         "std_mean_diff_after": std_diff_mean_after
                     })
 
-        var_order = [
+var_order = [
             "var",
             "ks_before",
             "ks_after",
@@ -355,13 +355,13 @@ class Matcher:
         ]
 
         return pd.DataFrame(test_results)[var_order] if return_table else None
-                
+
     def compare_categorical(self, return_table=False):
         """
         Plots the proportional differences of each enumerated
         discete column for test and control.
         i.e. <prop_test_that_have_x>  - <prop_control_that_have_x>
-        Each chart title contains the results from a 
+        Each chart title contains the results from a
         Chi-Square Test of Independence before and after
         matching.
         See pymatch.prop_test()
@@ -369,7 +369,7 @@ class Matcher:
         Parameters
         ----------
         return_table : bool
-            Should the function return a table with 
+            Should the function return a table with
             test results?
 
         Return
@@ -389,7 +389,7 @@ class Matcher:
             ret = (countt-countc).dropna()
             ret.columns = [colname]
             return ret
-        
+
         title_str = '''
         Proportional Difference (test-control) for {} Before and After Matching
         Chi-Square Test for Independence p-value before | after:
@@ -403,21 +403,21 @@ class Matcher:
                 df = dbefore.join(dafter)
                 test_results_i = self.prop_test(col)
                 test_results.append(test_results_i)
-                
+
                 # plotting
                 df.plot.bar(alpha=.8)
                 plt.title(title_str.format(col, test_results_i["before"], test_results_i["after"]))
                 lim = max(.09, abs(df).max().max()) + .01
                 plt.ylim((-lim, lim))
         return pd.DataFrame(test_results)[['var', 'before', 'after']] if return_table else None
-
+      
     def prep_prop_test(self, data, var):
         """
         Helper method for running chi-square contingency tests
 
         Balances the counts of discrete variables with our groups
-        so that missing levels are replaced with 0. 
-        i.e. if the test group has no records with x as a field 
+        so that missing levels are replaced with 0.
+        i.e. if the test group has no records with x as a field
         for a given column, make sure the count for x is 0
         and not missing.
 
@@ -450,7 +450,7 @@ class Matcher:
             d.update((k, 0) for k in all_keys if k not in d)
         ctable = [[i[k] for k in sorted(all_keys)] for i in table]
         return ctable
-            
+
     def prop_retained(self):
         """
         Returns the proportion of data retained after matching
@@ -459,7 +459,7 @@ class Matcher:
                len(self.data[self.data[self.yvar] == self.minority])
 
     def tune_threshold(self, method, nmatches=1, rng=np.arange(0, .001, .0001)):
-        """ 
+        """
         Matches data over a grid to optimize threshold value and plots results.
 
         Parameters
@@ -487,8 +487,8 @@ class Matcher:
         plt.xticks(rng)
 
     def record_frequency(self):
-        """ 
-        Calculates the frequency of specifi records in 
+        """
+        Calculates the frequency of specifi records in
         the matched dataset
 
         Returns
@@ -515,4 +515,3 @@ class Matcher:
     def _scores_to_accuracy(m, X, y):
         preds = [1.0 if i >= .5 else 0.0 for i in m.predict(X)]
         return (y == preds).sum() * 1.0 / len(y)
-
