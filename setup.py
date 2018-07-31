@@ -1,26 +1,27 @@
-from setuptools import setup, find_packages
-dependencies =[
-  'seaborn',
-  'statsmodels',
-  'scipy',
-  'patsy',
-  'matplotlib',
-  'pandas', 
-  'numpy'
+from setuptools import setup
+
+dependencies = [
+    'seaborn',
+    'statsmodels',
+    'scipy',
+    'patsy',
+    'matplotlib',
+    'pandas',
+    'numpy'
   ]
 
-VERSION = "0.2.7"
+VERSION = "0.2.8"
 
 setup(
-  name = 'pymatch',
-  packages = ['pymatch'],
-  version = VERSION,
-  description = 'Matching techniques for Observational Studies',
-  author = 'Ben Miroglio',
-  author_email = 'benmiroglio@gmail.com',
-  url = 'https://github.com/benmiroglio/pymatch',
-  download_url = 'https://github.com/benmiroglio/pymatch/archive/{}.tar.gz'.format(VERSION), 
-  keywords = ['logistic', 'regression', 'matching', 'observational', 'study', 'causal', 'inference'],
-  include_package_data=True,
-  requires=dependencies
-  )
+    name='pymatch',
+    packages=['pymatch'],
+    version=VERSION,
+    description='Matching techniques for Observational Studies',
+    author='Ben Miroglio',
+    author_email='benmiroglio@gmail.com',
+    url='https://github.com/benmiroglio/pymatch',
+    download_url='https://github.com/benmiroglio/pymatch/archive/{}.tar.gz'.format(VERSION),
+    keywords=['logistic', 'regression', 'matching', 'observational', 'study', 'causal', 'inference'],
+    include_package_data=True,
+    requires=dependencies
+)
