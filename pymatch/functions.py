@@ -14,8 +14,8 @@ def drop_static_cols(df, yvar, cols=None):
         if n_unique == 1:
             df.drop(col, axis=1, inplace=True)
     return df
-
-
+  
+  
 def ks_boot(tr, co, nboots=1000):
     nx = len(tr)
     w = np.concatenate((tr, co))
