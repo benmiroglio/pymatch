@@ -1,3 +1,4 @@
 *.DS_STORE
 *.pyc
 *.ipynb_checkpoints*
+.idea*

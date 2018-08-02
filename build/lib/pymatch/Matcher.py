@@ -1,6 +1,6 @@
 from __future__ import print_function
 from pymatch import *
-import functions as uf
+import pymatch.functions as uf
 
 class Matcher:
     """
@@ -342,17 +342,17 @@ class Matcher:
                         "std_mean_diff_after": std_diff_mean_after
                     })
 
-var_order = [
-            "var",
-            "ks_before",
-            "ks_after",
-            "grouped_chisqr_before",
-            "grouped_chisqr_after",
-            "std_median_diff_before",
-            "std_median_diff_after",
-            "std_mean_diff_before",
-            "std_mean_diff_after"
-        ]
+        var_order = [
+                    "var",
+                    "ks_before",
+                    "ks_after",
+                    "grouped_chisqr_before",
+                    "grouped_chisqr_after",
+                    "std_median_diff_before",
+                    "std_median_diff_after",
+                    "std_mean_diff_before",
+                    "std_mean_diff_after"
+                ]
 
         return pd.DataFrame(test_results)[var_order] if return_table else None
 

@@ -6,7 +6,7 @@ from scipy import stats
 from collections import Counter
 from itertools import chain
 import sys; sys.path.append(sys.argv[0])
-import functions as uf
+import pymatch.functions as uf
 import statsmodels.api as sm
 import patsy
 import seaborn as sns
