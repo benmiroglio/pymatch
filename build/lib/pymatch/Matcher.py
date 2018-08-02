@@ -94,8 +94,8 @@ class Matcher:
             i = 0
             errors = 0
             while i < nmodels and errors < 5:
-                uf.progress(i+1, nmodels, 
-                            prestr="Fitting {} Models on Balanced Samples...".format(nmodels))
+                uf.progress(i+1, nmodels,
+                            prestr="Fitting Models on Balanced Samples")
          
                 # sample from majority to create balance dataset
                 df = self.balanced_sample()
@@ -114,7 +114,7 @@ class Matcher:
                     errors += 1 # to avoid infinite loop for misspecified matrix
                     print('Error: {}'.format(e))
 
-            print("Average Accuracy:", "{}%".
+            print("\nAverage Accuracy:", "{}%".
                   format(round(np.mean(self.model_accuracy) * 100, 2)))
         else:
             # ignore any imbalance and fit one model
@@ -123,7 +123,7 @@ class Matcher:
             res = glm.fit()
             self.model_accuracy.append(self._scores_to_accuracy(res, self.X, self.y))
             self.models.append(res)
-            print("Accuracy", round(np.mean(self.model_accuracy[0]) * 100, 2))
+            print("\nAccuracy", round(np.mean(self.model_accuracy[0]) * 100, 2))
             
             
     def predict_scores(self):

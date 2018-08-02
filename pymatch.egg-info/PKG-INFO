@@ -1,13 +1,12 @@
 Metadata-Version: 1.1
 Name: pymatch
-Version: 0.3.2
+Version: 0.3.3
 Summary: Matching techniques for Observational Studies
 Home-page: https://github.com/benmiroglio/pymatch
 Author: Ben Miroglio
 Author-email: benmiroglio@gmail.com
 License: UNKNOWN
-Download-URL: https://github.com/benmiroglio/pymatch/archive/0.3.2.tar.gz
-Description-Content-Type: UNKNOWN
+Download-URL: https://github.com/benmiroglio/pymatch/archive/0.3.3.tar.gz
 Description: UNKNOWN
 Keywords: logistic,regression,matching,observational,study,causal,inference
 Platform: UNKNOWN

@@ -38,7 +38,7 @@ def ks_boot(tr, co, nboots=1000):
 
 def _chi2_distance(tb, cb):
     dist = 0
-    for b in np.union1d(tb.keys(), cb.keys()):
+    for b in set(np.union1d(list(tb.keys()), list(cb.keys()))):
         if b not in tb:
             tb[b] = 0
         if b not in cb:
@@ -89,7 +89,7 @@ def grouped_permutation_test(f, t, c, n_samples=1000):
         if sample_truth >= truth:
             times_geq += 1
         samp_arr.append(sample_truth)
-    return (times_geq * 1.0)  / n_samples, truth
+    return (times_geq * 1.0) / n_samples, truth
 
 
 def std_diff(a, b):
@@ -100,12 +100,12 @@ def std_diff(a, b):
 
 
 def progress(i, n, prestr=''):
-    sys.stdout.write('\r{}{}'.format(prestr, ''))
+    sys.stdout.write('\r{}: {}\{}'.format(prestr, i, n))
 
 
 def is_continuous(colname, dmatrix):
-    '''
+    """
     Check if the colname was treated as continuous in the patsy.dmatrix
     Would look like colname[<factor_value>] otherwise
-    '''
+    """
     return colname in dmatrix.columns
