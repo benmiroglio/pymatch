@@ -6,7 +6,9 @@ Matching techniques for observational studies. Inspired by and adapted from Jasj
 
 * Integration with Jupyter Notebooks (we use Jupyter + Pyspark)
 * Additional Non-Parametric Tests / Plotting Functionality to assess balance.
-* A more modular, user-specified matching process 
+* A more modular, user-specified matching process
+
+This package was used to support [this research project](https://dl.acm.org/citation.cfm?id=3178876.3186162).
 
 # Installation
 
