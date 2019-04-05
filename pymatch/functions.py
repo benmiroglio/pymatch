@@ -7,6 +7,16 @@ import random
 
 
 def find_nearest_n(pd_series, value, n, threshold=sys.maxsize):
+    """
+    Function which returns the n nearest neighbours of a value from a series of values. The function
+    requires the series of values to be sorted. In case two different values in the series are equidistant
+    from the input value, and they are both nearest neighbour candidates, one of them is chosen randomly.
+    :param pd_series: A sorted series of values
+    :param value: the value for which we would like to find the nearest neighbours
+    :param n: the number of nearest neighbours
+    :param threshold: A threshold defining the maximum allowed distance between the value and the nearest neighbours
+    :return: a list containing the values of the nearest neighbours to the value.
+    """
     nn_array = []
     idx = pd_series.searchsorted(value, side="left")
     idx_right = idx[0]
