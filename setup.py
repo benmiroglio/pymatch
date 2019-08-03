@@ -10,7 +10,7 @@ dependencies = [
     'numpy'
   ]
 
-VERSION = "0.3.4.1"
+VERSION = "0.3.4.2"
 
 setup(
     name='pymatch',

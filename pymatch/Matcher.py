@@ -46,7 +46,9 @@ class Matcher:
         self.xvars = [i for i in self.data.columns if i not in self.exclude and i != yvar]
         self.data = self.data.dropna(subset=self.xvars)
         self.matched_data = []
-        self.y, self.X = patsy.dmatrices('{} ~ {}'.format(yvar, '+'.join(self.xvars)),
+        self.xvars_escaped = [ "Q('{}')".format(x) for x in self.xvars]
+        self.yvar_escaped = "Q('{}')".format(self.yvar)
+        self.y, self.X = patsy.dmatrices('{} ~ {}'.format(self.yvar_escaped, '+'.join(self.xvars_escaped)),
                                          data=self.data, return_type='dataframe')
         self.xvars = [i for i in self.data.columns if i not in self.exclude]
         self.test= self.data[self.data[yvar] == True]
@@ -85,7 +87,9 @@ class Matcher:
             self.model_accuracy = []
         if not self.formula:
             # use all columns in the model
-            self.formula = '{} ~ {}'.format(self.yvar, '+'.join(self.xvars))
+            self.xvars_escaped = [ "Q('{}')".format(x) for x in self.xvars]
+            self.yvar_escaped = "Q('{}')".format(self.yvar)
+            self.formula = '{} ~ {}'.format(self.yvar_escaped, '+'.join(self.xvars_escaped))
         if balance:
             if nmodels is None:
                 # fit multiple models based on imbalance severity (rounded up to nearest tenth)
@@ -105,7 +109,7 @@ class Matcher:
                 y_samp, X_samp = patsy.dmatrices(self.formula, data=df, return_type='dataframe')
                 X_samp.drop(self.yvar, axis=1, errors='ignore', inplace=True)
                 glm = GLM(y_samp, X_samp, family=sm.families.Binomial())
-                
+
                 try:
                     res = glm.fit()
                     self.model_accuracy.append(self._scores_to_accuracy(res, X_samp, y_samp))
@@ -124,8 +128,8 @@ class Matcher:
             self.model_accuracy.append(self._scores_to_accuracy(res, self.X, self.y))
             self.models.append(res)
             print("\nAccuracy", round(np.mean(self.model_accuracy[0]) * 100, 2))
-            
-            
+
+
     def predict_scores(self):
         """
         Predict Propensity scores for each observation.
@@ -247,14 +251,14 @@ class Matcher:
 
         """
         if not uf.is_continuous(col, self.X) and col not in self.exclude:
-            pval_before = round(stats.chi2_contingency(self.prep_prop_test(self.data, 
+            pval_before = round(stats.chi2_contingency(self.prep_prop_test(self.data,
                                                                            col))[1], 6)
-            pval_after = round(stats.chi2_contingency(self.prep_prop_test(self.matched_data, 
+            pval_after = round(stats.chi2_contingency(self.prep_prop_test(self.matched_data,
                                                                           col))[1], 6)
             return {'var':col, 'before':pval_before, 'after':pval_after}
         else:
             print("{} is a continuous variable".format(col))
-   
+
     def compare_continuous(self, save=False, return_table=False):
         """
         Plots the ECDFs for continuous features before and
@@ -325,11 +329,11 @@ class Matcher:
                 Std. Median Difference: {}
                 Std. Mean Difference: {}
                 '''
-                ax1.set_title(title_str.format(col, "before", ksb, pb, 
+                ax1.set_title(title_str.format(col, "before", ksb, pb,
                                                std_diff_med_before, std_diff_mean_before))
                 ax2.plot(xca.x, xca.y, label='Control')
                 ax2.plot(xta.x, xta.y, label='Test')
-                ax2.set_title(title_str.format(col, "after", ksa, pa, 
+                ax2.set_title(title_str.format(col, "after", ksa, pa,
                                                std_diff_med_after, std_diff_mean_after))
                 ax2.legend(loc="lower right")
                 plt.xlim((0, np.percentile(xta.x, 99)))
@@ -410,12 +414,12 @@ class Matcher:
 
                 # plotting
                 df.plot.bar(alpha=.8)
-                plt.title(title_str.format(col, test_results_i["before"], 
+                plt.title(title_str.format(col, test_results_i["before"],
                                            test_results_i["after"]))
                 lim = max(.09, abs(df).max().max()) + .01
                 plt.ylim((-lim, lim))
         return pd.DataFrame(test_results)[['var', 'before', 'after']] if return_table else None
-      
+
     def prep_prop_test(self, data, var):
         """
         Helper method for running chi-square contingency tests
