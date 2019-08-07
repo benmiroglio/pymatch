@@ -141,7 +141,7 @@ class Matcher:
             scores += m.predict(self.X[m.params.index])
         self.data['scores'] = scores/self.nmodels
 
-    def match(self, threshold=0.001, nmatches=1, method='min', max_rand=10, matchtype='replacement'):
+    def match(self, threshold=0.001, nmatches=1, method='min', max_rand=10, with_replacement=True):
         """
         Finds suitable match(es) for each record in the minority
         dataset, if one exists. Records are exlcuded from the final
@@ -165,11 +165,11 @@ class Matcher:
             "min" - choose the profile with the closest score
         max_rand : int
             max number of profiles to consider when using random tie-breaks
-        matchtype : str
-            "replacement" - matching is performed with replacement, in the 
+        with_replacement : bool
+            True - matching is performed with replacement, in the 
             majority group. The same entry from the majority group can be 
             matched to multiple entries from the minority group
-            "no_replacement" - matching is performed without replacement, in 
+            False - matching is performed without replacement, in 
             the majority group. All matches consist of unique entries. 
             Matching order is randomized.
 
