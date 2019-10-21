@@ -191,13 +191,10 @@ class Matcher:
             # uf.progress(i+1, len(test_scores), 'Matching Control to Test...')
             match_id = i
             score = test_scores.iloc[i]
-            if method == 'random':
-                bool_match = abs(ctrl_scores - score) <= threshold
-                matches = ctrl_scores.loc[bool_match[bool_match.scores].index]
-            elif method == 'min':
-                matches = abs(ctrl_scores - score).sort_values('scores').head(nmatches)
-            else:
-                raise(AssertionError, "Invalid method parameter, use ('random', 'min')")
+
+            bool_match = abs(ctrl_scores - score) <= threshold
+            matches = ctrl_scores.loc[bool_match[bool_match.scores].index]
+
             if len(matches) == 0:
                 continue
             # randomly choose nmatches indices, if len(matches) > nmatches
