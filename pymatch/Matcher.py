@@ -185,7 +185,7 @@ class Matcher:
         test_scores = self.data[self.data[self.yvar]==True][['scores']]
         ctrl_scores = self.data[self.data[self.yvar]==False][['scores']]
         result, match_ids = [], []
-        if matchtype=='no_replacement':
+        if with_replacement==False:
             test_scores=test_scores.reindex(np.random.permutation(test_scores.index))
         for i in range(len(test_scores)):
             # uf.progress(i+1, len(test_scores), 'Matching Control to Test...')
@@ -205,7 +205,7 @@ class Matcher:
             chosen = np.random.choice(matches.index, min(select, nmatches), replace=False)
             result.extend([test_scores.index[i]] + list(chosen))
             match_ids.extend([i] * (len(chosen)+1))
-            if matchtype=='no_replacement':
+            if with_replacement==False:
                 ctrl_scores['scores'].iloc[list(chosen-len(test_scores))]=999
         self.matched_data = self.data.loc[result]
         self.matched_data['match_id'] = match_ids
