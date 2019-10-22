@@ -7,4 +7,5 @@ pymatch/functions.py
 pymatch.egg-info/PKG-INFO
 pymatch.egg-info/SOURCES.txt
 pymatch.egg-info/dependency_links.txt
+pymatch.egg-info/requires.txt
 pymatch.egg-info/top_level.txt

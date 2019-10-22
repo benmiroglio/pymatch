@@ -13,6 +13,7 @@ def drop_static_cols(df, yvar, cols=None):
         n_unique = len(np.unique(df[col]))
         if n_unique == 1:
             df.drop(col, axis=1, inplace=True)
+            sys.stdout.write('\rStatic column dropped: {}'.format(col))
     return df
   
   

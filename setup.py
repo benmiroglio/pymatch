@@ -10,7 +10,7 @@ dependencies = [
     'numpy'
   ]
 
-VERSION = "0.3.4"
+VERSION = "0.3.4.2"
 
 setup(
     name='pymatch',
@@ -23,5 +23,5 @@ setup(
     download_url='https://github.com/benmiroglio/pymatch/archive/{}.tar.gz'.format(VERSION),
     keywords=['logistic', 'regression', 'matching', 'observational', 'study', 'causal', 'inference'],
     include_package_data=True,
-    requires=dependencies
+    install_requires=dependencies
 )
