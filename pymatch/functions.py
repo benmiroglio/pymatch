@@ -109,4 +109,4 @@ def is_continuous(colname, dmatrix):
     Check if the colname was treated as continuous in the patsy.dmatrix
     Would look like colname[<factor_value>] otherwise
     """
-    return colname in dmatrix.columns
+    return (colname in dmatrix.columns) or ("Q('{}')".format(colname) in dmatrix.columns)
