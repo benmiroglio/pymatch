@@ -2,3 +2,5 @@
 *.pyc
 .ipynb_checkpoints/
 .idea*
+
+loan_full.csv
