@@ -19,8 +19,8 @@ def find_nearest_n(pd_series, value, n, threshold=sys.maxsize):
     """
     nn_array = []
     idx = pd_series.searchsorted(value, side="left")
-    idx_right = idx[0]
-    idx_left = idx[0] - 1
+    idx_right = idx
+    idx_left = max(idx - 1, 0)
     pd_series_values = pd_series.values
 
     for i in range(0, n):
