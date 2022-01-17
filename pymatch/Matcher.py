@@ -51,7 +51,7 @@ class Matcher:
         self.y, self.X = patsy.dmatrices('{} ~ {}'.format(self.yvar_escaped, '+'.join(self.xvars_escaped)),
                                          data=self.data, return_type='dataframe')
         self.xvars = [i for i in self.data.columns if i not in self.exclude]
-        self.test= self.data[self.data[yvar] == True]
+        self.test = self.data[self.data[yvar] == True]
         self.control = self.data[self.data[yvar] == False]
         self.testn = len(self.test)
         self.controln = len(self.control)
@@ -61,6 +61,11 @@ class Matcher:
         print('Formula:\n{} ~ {}'.format(yvar, '+'.join(self.xvars)))
         print('n majority:', len(self.data[self.data[yvar] == self.majority]))
         print('n minority:', len(self.data[self.data[yvar] == self.minority]))
+
+        univalued_vars = [(var, len(set(self.test[var])) <= 1 and len(set(self.control[var])) <= 1) for var in self.xvars]
+        if any([uv[1] for uv in univalued_vars]):
+            raise Exception("Univalued variable(s) detected in test / control data: %s\n these require to be removed" %
+                            str([uv[0] for uv in univalued_vars if uv[1]]))
 
     def fit_scores(self, balance=True, nmodels=None):
         """
@@ -128,6 +133,9 @@ class Matcher:
             self.model_accuracy.append(self._scores_to_accuracy(res, self.X, self.y))
             self.models.append(res)
             print("\nAccuracy", round(np.mean(self.model_accuracy[0]) * 100, 2))
+
+        if len(self.models) != self.nmodels:
+            raise Exception("Fit not complete; see above printed errors")
 
 
     def predict_scores(self):
