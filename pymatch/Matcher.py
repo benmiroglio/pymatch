@@ -369,8 +369,9 @@ class Matcher:
                     "std_mean_diff_before",
                     "std_mean_diff_after"
                 ]
-
-        return pd.DataFrame(test_results)[var_order] if return_table else None
+        if return_table:
+            return pd.DataFrame(columns=var_order) if len(test_results) == 0 else pd.DataFrame(test_results)[var_order]
+        return None
 
     def compare_categorical(self, return_table=False):
         """
@@ -426,7 +427,10 @@ class Matcher:
                                            test_results_i["after"]))
                 lim = max(.09, abs(df).max().max()) + .01
                 plt.ylim((-lim, lim))
-        return pd.DataFrame(test_results)[['var', 'before', 'after']] if return_table else None
+        if return_table:
+            return pd.DataFrame(columns=['var', 'before', 'after']) if len(test_results) == 0 else \
+                pd.DataFrame(test_results)[['var', 'before', 'after']]
+        return None
 
     def prep_prop_test(self, data, var):
         """
