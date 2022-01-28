@@ -67,7 +67,7 @@ class Matcher:
             raise Exception("Univalued variable(s) detected in test / control data: %s\n these require to be removed" %
                             str([uv[0] for uv in univalued_vars if uv[1]]))
 
-    def fit_scores(self, balance=True, nmodels=None):
+    def fit_scores(self, balance=True, nmodels=None, maxerrors=5):
         """
         Fits logistic regression model(s) used for
         generating propensity scores
@@ -80,6 +80,8 @@ class Matcher:
         nmodels : int
             How many models should be fit?
             Score becomes the average of the <nmodels> models if nmodels > 1
+        maxerrors : int
+            Number of errors (out of creating nmodels) allowed before raising an Exception
 
         Returns
         -------
@@ -104,18 +106,19 @@ class Matcher:
             self.nmodels = nmodels
             i = 0
             errors = 0
-            while i < nmodels and errors < 5:
+            while i < nmodels and errors < maxerrors:
                 uf.progress(i+1, nmodels, prestr="Fitting Models on Balanced Samples")
                 # sample from majority to create balance dataset
                 df = self.balanced_sample()
                 df = pd.concat([uf.drop_static_cols(df[df[self.yvar] == 1], yvar=self.yvar),
                                 uf.drop_static_cols(df[df[self.yvar] == 0], yvar=self.yvar)],
                                sort=True)
-                y_samp, X_samp = patsy.dmatrices(self.formula, data=df, return_type='dataframe')
-                X_samp.drop(self.yvar, axis=1, errors='ignore', inplace=True)
-                glm = GLM(y_samp, X_samp, family=sm.families.Binomial())
-
                 try:
+                    if not all([var in df.columns for var in self.xvars]):
+                        raise Exception("Subsampling lead to dropping (a) required column(s) due to being static")
+                    y_samp, X_samp = patsy.dmatrices(self.formula, data=df, return_type='dataframe')
+                    X_samp.drop(self.yvar, axis=1, errors='ignore', inplace=True)
+                    glm = GLM(y_samp, X_samp, family=sm.families.Binomial())
                     res = glm.fit()
                     self.model_accuracy.append(self._scores_to_accuracy(res, X_samp, y_samp))
                     self.models.append(res)
@@ -123,6 +126,8 @@ class Matcher:
                 except Exception as e:
                     errors = errors + 1 # to avoid infinite loop for misspecified matrix
                     print('Error: {}'.format(e))
+            if errors >= maxerrors:
+                raise Exception("Encountered too many errors")
             print("\nAverage Accuracy:", "{}%".
                   format(round(np.mean(self.model_accuracy) * 100, 2)))
         else:
