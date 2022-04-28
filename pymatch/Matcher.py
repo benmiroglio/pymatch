@@ -35,15 +35,17 @@ class Matcher:
         self.model_accuracy = []
         self.matched_data = []
 
-        # assign unique indices to test and control
-        t, c = [i.copy().reset_index(drop=True) for i in (test, control)]
+        # assign unique indices to test and control, keep original index as excluded col
+        test.index.name = 'og_idx'
+        control.index.name = 'og_idx'
+        t, c = [i.copy().reset_index() for i in (test, control)]
         t = t.dropna(axis=1, how="all")
         c = c.dropna(axis=1, how="all")
         c.index += len(t)
         self.data = t.dropna(axis=1, how='all').append(c.dropna(axis=1, how='all'), sort=True)
 
         # variables generated during matching
-        aux_match = ['scores', 'match_id', 'weight', 'record_id']
+        aux_match = ['scores', 'match_id', 'weight', 'record_id','og_idx']
         self.yvar = yvar
         self.exclude = exclude + [self.yvar] + aux_match
         self.xvars = [i for i in self.data.columns if i not in self.exclude]
