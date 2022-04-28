@@ -23,34 +23,45 @@ class Matcher:
     """
 
     def __init__(self, test, control, yvar, formula=None, exclude=[]):
+        self.control_color = "#1F77B4"
+        self.test_color = "#FF7F0E"
+
         # configure plots for ipynb
         plt.rcParams["figure.figsize"] = (10, 5)
-        # variables generated during matching
-        aux_match = ['scores', 'match_id', 'weight', 'record_id']
+
+        self.nmodels = 1  # for now
+        self.models = []
+        self.swdata = None
+        self.model_accuracy = []
+        self.matched_data = []
+
         # assign unique indices to test and control
         t, c = [i.copy().reset_index(drop=True) for i in (test, control)]
         t = t.dropna(axis=1, how="all")
         c = c.dropna(axis=1, how="all")
         c.index += len(t)
         self.data = t.dropna(axis=1, how='all').append(c.dropna(axis=1, how='all'), sort=True)
-        self.control_color = "#1F77B4"
-        self.test_color = "#FF7F0E"
+
+        # variables generated during matching
+        aux_match = ['scores', 'match_id', 'weight', 'record_id']
         self.yvar = yvar
         self.exclude = exclude + [self.yvar] + aux_match
-        self.formula = formula
-        self.nmodels = 1  # for now
-        self.models = []
-        self.swdata = None
-        self.model_accuracy = []
+        self.xvars = [i for i in self.data.columns if i not in self.exclude]
+
         self.data[yvar] = self.data[yvar].astype(int)  # should be binary 0, 1
-        self.xvars = [i for i in self.data.columns if i not in self.exclude and i != yvar]
         self.data = self.data.dropna(subset=self.xvars)
-        self.matched_data = []
+
         self.xvars_escaped = [ "Q('{}')".format(x) for x in self.xvars]
         self.yvar_escaped = "Q('{}')".format(self.yvar)
-        self.y, self.X = patsy.dmatrices('{} ~ {}'.format(self.yvar_escaped, '+'.join(self.xvars_escaped)),
+
+        if formula is None:
+            self.formula = '{} ~ {}'.format(self.yvar_escaped, '+'.join(self.xvars_escaped))
+        else:
+            self.formula = formula
+
+        self.y, self.X = patsy.dmatrices(self.formula,
                                          data=self.data, return_type='dataframe')
-        self.xvars = [i for i in self.data.columns if i not in self.exclude]
+
         self.test= self.data[self.data[yvar] == True]
         self.control = self.data[self.data[yvar] == False]
         self.testn = len(self.test)
@@ -58,7 +69,8 @@ class Matcher:
         self.minority, self.majority = [i[1] for i in sorted(zip([self.testn, self.controln],
                                                                  [1, 0]),
                                                              key=lambda x: x[0])]
-        print('Formula:\n{} ~ {}'.format(yvar, '+'.join(self.xvars)))
+
+        print('Formula:\n{}'.format(self.formula))
         print('n majority:', len(self.data[self.data[yvar] == self.majority]))
         print('n minority:', len(self.data[self.data[yvar] == self.minority]))
 
