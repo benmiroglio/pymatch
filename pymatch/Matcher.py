@@ -99,11 +99,6 @@ class Matcher:
             self.models = []
         if len(self.model_accuracy) > 0:
             self.model_accuracy = []
-        if not self.formula:
-            # use all columns in the model
-            self.xvars_escaped = [ "Q('{}')".format(x) for x in self.xvars]
-            self.yvar_escaped = "Q('{}')".format(self.yvar)
-            self.formula = '{} ~ {}'.format(self.yvar_escaped, '+'.join(self.xvars_escaped))
         if balance:
             if nmodels is None:
                 # fit multiple models based on imbalance severity (rounded up to nearest tenth)
