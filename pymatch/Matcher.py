@@ -51,7 +51,7 @@ class Matcher:
         self.y, self.X = patsy.dmatrices('{} ~ {}'.format(self.yvar_escaped, '+'.join(self.xvars_escaped)),
                                          data=self.data, return_type='dataframe')
         self.xvars = [i for i in self.data.columns if i not in self.exclude]
-        self.test= self.data[self.data[yvar] == True]
+        self.test = self.data[self.data[yvar] == True]
         self.control = self.data[self.data[yvar] == False]
         self.testn = len(self.test)
         self.controln = len(self.control)
@@ -62,7 +62,12 @@ class Matcher:
         print('n majority:', len(self.data[self.data[yvar] == self.majority]))
         print('n minority:', len(self.data[self.data[yvar] == self.minority]))
 
-    def fit_scores(self, balance=True, nmodels=None):
+        univalued_vars = [(var, len(set(self.test[var])) <= 1 and len(set(self.control[var])) <= 1) for var in self.xvars]
+        if any([uv[1] for uv in univalued_vars]):
+            raise Exception("Univalued variable(s) detected in test / control data: %s\n these require to be removed" %
+                            str([uv[0] for uv in univalued_vars if uv[1]]))
+
+    def fit_scores(self, balance=True, nmodels=None, maxerrors=5):
         """
         Fits logistic regression model(s) used for
         generating propensity scores
@@ -75,6 +80,8 @@ class Matcher:
         nmodels : int
             How many models should be fit?
             Score becomes the average of the <nmodels> models if nmodels > 1
+        maxerrors : int
+            Number of errors (out of creating nmodels) allowed before raising an Exception
 
         Returns
         -------
@@ -99,18 +106,19 @@ class Matcher:
             self.nmodels = nmodels
             i = 0
             errors = 0
-            while i < nmodels and errors < 5:
+            while i < nmodels and errors < maxerrors:
                 uf.progress(i+1, nmodels, prestr="Fitting Models on Balanced Samples")
                 # sample from majority to create balance dataset
                 df = self.balanced_sample()
                 df = pd.concat([uf.drop_static_cols(df[df[self.yvar] == 1], yvar=self.yvar),
                                 uf.drop_static_cols(df[df[self.yvar] == 0], yvar=self.yvar)],
                                sort=True)
-                y_samp, X_samp = patsy.dmatrices(self.formula, data=df, return_type='dataframe')
-                X_samp.drop(self.yvar, axis=1, errors='ignore', inplace=True)
-                glm = GLM(y_samp, X_samp, family=sm.families.Binomial())
-
                 try:
+                    if not all([var in df.columns for var in self.xvars]):
+                        raise Exception("Subsampling lead to dropping (a) required column(s) due to being static")
+                    y_samp, X_samp = patsy.dmatrices(self.formula, data=df, return_type='dataframe')
+                    X_samp.drop(self.yvar, axis=1, errors='ignore', inplace=True)
+                    glm = GLM(y_samp, X_samp, family=sm.families.Binomial())
                     res = glm.fit()
                     self.model_accuracy.append(self._scores_to_accuracy(res, X_samp, y_samp))
                     self.models.append(res)
@@ -118,6 +126,8 @@ class Matcher:
                 except Exception as e:
                     errors = errors + 1 # to avoid infinite loop for misspecified matrix
                     print('Error: {}'.format(e))
+            if errors >= maxerrors:
+                raise Exception("Encountered too many errors")
             print("\nAverage Accuracy:", "{}%".
                   format(round(np.mean(self.model_accuracy) * 100, 2)))
         else:
@@ -128,6 +138,9 @@ class Matcher:
             self.model_accuracy.append(self._scores_to_accuracy(res, self.X, self.y))
             self.models.append(res)
             print("\nAccuracy", round(np.mean(self.model_accuracy[0]) * 100, 2))
+
+        if len(self.models) != self.nmodels:
+            raise Exception("Fit not complete; see above printed errors")
 
 
     def predict_scores(self):
@@ -361,8 +374,9 @@ class Matcher:
                     "std_mean_diff_before",
                     "std_mean_diff_after"
                 ]
-
-        return pd.DataFrame(test_results)[var_order] if return_table else None
+        if return_table:
+            return pd.DataFrame(columns=var_order) if len(test_results) == 0 else pd.DataFrame(test_results)[var_order]
+        return None
 
     def compare_categorical(self, return_table=False):
         """
@@ -418,7 +432,10 @@ class Matcher:
                                            test_results_i["after"]))
                 lim = max(.09, abs(df).max().max()) + .01
                 plt.ylim((-lim, lim))
-        return pd.DataFrame(test_results)[['var', 'before', 'after']] if return_table else None
+        if return_table:
+            return pd.DataFrame(columns=['var', 'before', 'after']) if len(test_results) == 0 else \
+                pd.DataFrame(test_results)[['var', 'before', 'after']]
+        return None
 
     def prep_prop_test(self, data, var):
         """
