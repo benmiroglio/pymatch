@@ -145,7 +145,7 @@ class Matcher:
             scores += m.predict(self.X[m.params.index])
         self.data['scores'] = scores/self.nmodels
 
-    def match(self, threshold=0.001, nmatches=1, method='min', max_rand=10):
+    def match(self, threshold=0.001, nmatches=1, method='min', max_rand=10, with_replacement=True):
         """
         Finds suitable match(es) for each record in the minority
         dataset, if one exists. Records are exlcuded from the final
@@ -178,18 +178,21 @@ class Matcher:
             print("Propensity Scores have not been calculated. Using defaults...")
             self.fit_scores()
             self.predict_scores()
-        test_scores = self.data[self.data[self.yvar]==True][['scores']]
-        ctrl_scores = self.data[self.data[self.yvar]==False][['scores']]
+        test_scores = self.data[self.data[self.yvar] == True][['scores']]
+        ctrl_scores = self.data[self.data[self.yvar] == False][['scores']].sort_values(by='scores')
         result, match_ids = [], []
         for i in range(len(test_scores)):
-            # uf.progress(i+1, len(test_scores), 'Matching Control to Test...')
-            match_id = i
-            score = test_scores.iloc[i]
+            uf.progress(i+1, len(test_scores), 'Matching Control to Test...')
+            score = test_scores.iloc[i].values[0]
             if method == 'random':
                 bool_match = abs(ctrl_scores - score) <= threshold
                 matches = ctrl_scores.loc[bool_match[bool_match.scores].index]
             elif method == 'min':
-                matches = abs(ctrl_scores - score).sort_values('scores').head(nmatches)
+                nearest_neighbour_values = uf.find_nearest_n(ctrl_scores.scores,
+                                                             score,
+                                                             nmatches,
+                                                             threshold=threshold)
+                matches = ctrl_scores[ctrl_scores.scores.isin(nearest_neighbour_values)]
             else:
                 raise(AssertionError, "Invalid method parameter, use ('random', 'min')")
             if len(matches) == 0:
@@ -199,6 +202,8 @@ class Matcher:
             chosen = np.random.choice(matches.index, min(select, nmatches), replace=False)
             result.extend([test_scores.index[i]] + list(chosen))
             match_ids.extend([i] * (len(chosen)+1))
+            if not with_replacement:
+                ctrl_scores.drop(list(chosen), inplace=True)
         self.matched_data = self.data.loc[result]
         self.matched_data['match_id'] = match_ids
         self.matched_data['record_id'] = self.matched_data.index

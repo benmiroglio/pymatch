@@ -2,6 +2,60 @@ from __future__ import division
 from pymatch import *
 import sys
 import numpy as np
+import math
+import random
+
+
+def find_nearest_n(pd_series, value, n, threshold=sys.maxsize):
+    """
+    Function which returns the n nearest neighbours of a value from a series of values. The function
+    requires the series of values to be sorted. In case two different values in the series are equidistant
+    from the input value, and they are both nearest neighbour candidates, one of them is chosen randomly.
+    :param pd_series: A sorted series of values
+    :param value: the value for which we would like to find the nearest neighbours
+    :param n: the number of nearest neighbours
+    :param threshold: A threshold defining the maximum allowed distance between the value and the nearest neighbours
+    :return: a list containing the values of the nearest neighbours to the value.
+    """
+    nn_array = []
+    idx = pd_series.searchsorted(value, side="left")
+    idx_right = idx
+    idx_left = max(idx - 1, 0)
+    pd_series_values = pd_series.values
+
+    for i in range(0, n):
+
+        if (idx_right == len(pd_series) or math.fabs(value - pd_series_values[idx_left]) <
+                                           math.fabs(value - pd_series_values[idx_right])):
+            if math.fabs(value - pd_series_values[idx_left]) > threshold:
+                idx_left = -1
+            else:
+                nn_array.append(pd_series_values[idx_left])
+                idx_left -= 1
+
+        elif idx_right < len(pd_series) and math.fabs(value - pd_series_values[idx_left]) == \
+                                            math.fabs(value - pd_series_values[idx_right]):
+
+            if math.fabs(value - pd_series_values[idx_left]) > threshold:
+                break
+            else:
+                if random.random() > 0.5:
+                    nn_array.append(pd_series_values[idx_left])
+                    idx_left -= 1
+                else:
+                    nn_array.append(pd_series_values[idx_right])
+                    idx_right += 1
+
+        elif idx_right == len(pd_series) and idx_left == 0:
+            break
+
+        else:
+            if math.fabs(value - pd_series_values[idx_right]) > threshold:
+                idx_right = len(pd_series)
+            else:
+                nn_array.append(pd_series_values[idx_right])
+                idx_right += 1
+    return nn_array
 
 
 def drop_static_cols(df, yvar, cols=None):
