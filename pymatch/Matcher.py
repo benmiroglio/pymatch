@@ -1,4 +1,6 @@
 from __future__ import print_function
+
+import re
 from pymatch import *
 import pymatch.functions as uf
 
@@ -322,18 +324,19 @@ class Matcher:
                 ax1.plot(xcb.x, xcb.y, label='Control', color=self.control_color)
                 ax1.plot(xtb.x, xtb.y, label='Test', color=self.test_color)
 
-                title_str = '''
-                ECDF for {} {} Matching
+                safe_col = re.sub(r'([_\$\%\#\{\}])', r'\\\1', col)  # colname safe to latex
+                title_str = r'''
+                ECDF for $\bf{{{}}}$ {} Matching
                 KS p-value: {}
                 Grouped Perm p-value: {}
                 Std. Median Difference: {}
                 Std. Mean Difference: {}
                 '''
-                ax1.set_title(title_str.format(col, "before", ksb, pb,
+                ax1.set_title(title_str.format(safe_col, "before", ksb, pb,
                                                std_diff_med_before, std_diff_mean_before))
                 ax2.plot(xca.x, xca.y, label='Control')
                 ax2.plot(xta.x, xta.y, label='Test')
-                ax2.set_title(title_str.format(col, "after", ksa, pa,
+                ax2.set_title(title_str.format(safe_col, "after", ksa, pa,
                                                std_diff_med_after, std_diff_mean_after))
                 ax2.legend(loc="lower right")
                 plt.xlim((0, np.percentile(xta.x, 99)))
