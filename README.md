@@ -74,7 +74,7 @@ fields = \
 data = pd.read_csv(path)[fields]
 ```
 
-Create test and control groups and reassign `loan_status` to be a binary treatment indicator. This is our reponse in the logistic regression model(s) used to generate propensity scores.
+Create test and control groups and reassign `loan_status` to be a binary treatment indicator. This is our response in the logistic regression model(s) used to generate propensity scores.
 
 
 ```python
@@ -122,7 +122,7 @@ m.fit_scores(balance=True, nmodels=100)
     Average Accuracy: 70.21%
 
 
-The average accuracy of our 100 models is 70.21%, suggesting that there's separability within our data and justifiying the need for the matching procedure. It's worth noting that we don't pay much attention to these logistic models since we are using them as a feature extraction tool (generation of propensity scores). The accuracy is a good way to detect separability at a glance, but we shouldn't spend time tuning and tinkering with these models. If our accuracy was close to 50%, that would suggest we cannot detect much separability in our groups given the features we observe and that matching is probably not necessary (or more features should be included if possible).
+The average accuracy of our 100 models is 70.21%, suggesting that there's separability within our data and justifying the need for the matching procedure. It's worth noting that we don't pay much attention to these logistic models since we are using them as a feature extraction tool (generation of propensity scores). The accuracy is a good way to detect separability at a glance, but we shouldn't spend time tuning and tinkering with these models. If our accuracy was close to 50%, that would suggest we cannot detect much separability in our groups given the features we observe and that matching is probably not necessary (or more features should be included if possible).
 
 ### Predict Scores
 
@@ -443,17 +443,17 @@ Looking at the plots and test results, we did a pretty good job balancing our ca
 
 ___Continuous___
 
-For continous variables we look at Empirical Cumulative Distribution Functions (ECDF) for our test and control groups  before and after matching.
+For continuous variables we look at Empirical Cumulative Distribution Functions (ECDF) for our test and control groups  before and after matching.
 
 For example, the first plot pair shows:
 
-* ECDF for test vs ECDF for control **before** matching (left), ECDF for test vs ECDF for control **after** matching (right). We want the two lines to be very close to each other (or indistiguishable) after matching.
+* ECDF for test vs ECDF for control **before** matching (left), ECDF for test vs ECDF for control **after** matching (right). We want the two lines to be very close to each other (or indistinguishable) after matching.
 * Some tests + metrics are included in the chart titles.
     * Tests performed:
         * Kolmogorov-Smirnov Goodness of fit Test (KS-test)
             This test statistic is calculated on 1000
             permuted samples of the data, generating
-            an imperical p-value.  See `pymatch.functions.ks_boot()`
+            an empirical p-value.  See `pymatch.functions.ks_boot()`
             This is an adaptation of the [`ks.boot()`](https://www.rdocumentation.org/packages/Matching/versions/4.9-2/topics/ks.boot) method in 
             the R "Matching" package
         * Chi-Square Distance:
@@ -462,7 +462,7 @@ For example, the first plot pair shows:
             See `pymatch.functions.grouped_permutation_test()`
 
     * Other included Stats:
-        * Standarized mean and median differences.
+        * Standardized mean and median differences.
              How many standard deviations away are the mean/median
             between our groups before and after matching
             i.e. `abs(mean(control) - mean(test))` / `std(control.union(test))`
