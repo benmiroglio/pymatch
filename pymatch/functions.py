@@ -13,7 +13,6 @@ def drop_static_cols(df, yvar, cols=None):
         n_unique = len(np.unique(df[col]))
         if n_unique == 1:
             df.drop(col, axis=1, inplace=True)
-            sys.stdout.write('\rStatic column dropped: {}'.format(col))
     return df
   
   
@@ -109,4 +108,4 @@ def is_continuous(colname, dmatrix):
     Check if the colname was treated as continuous in the patsy.dmatrix
     Would look like colname[<factor_value>] otherwise
     """
-    return (colname in dmatrix.columns) or ("Q('{}')".format(colname) in dmatrix.columns)
+    return colname in dmatrix.columns

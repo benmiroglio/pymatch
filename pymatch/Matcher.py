@@ -32,7 +32,7 @@ class Matcher:
         t = t.dropna(axis=1, how="all")
         c = c.dropna(axis=1, how="all")
         c.index += len(t)
-        self.data = t.dropna(axis=1, how='all').append(c.dropna(axis=1, how='all'), sort=True)
+        self.data = t.dropna(axis=1, how='all').append(c.dropna(axis=1, how='all')).dropna()
         self.control_color = "#1F77B4"
         self.test_color = "#FF7F0E"
         self.yvar = yvar
@@ -44,20 +44,17 @@ class Matcher:
         self.model_accuracy = []
         self.data[yvar] = self.data[yvar].astype(int)  # should be binary 0, 1
         self.xvars = [i for i in self.data.columns if i not in self.exclude and i != yvar]
-        self.data = self.data.dropna(subset=self.xvars)
         self.matched_data = []
-        self.xvars_escaped = [ "Q('{}')".format(x) for x in self.xvars]
-        self.yvar_escaped = "Q('{}')".format(self.yvar)
-        self.y, self.X = patsy.dmatrices('{} ~ {}'.format(self.yvar_escaped, '+'.join(self.xvars_escaped)),
-                                         data=self.data, return_type='dataframe')
+        self.y, self.X = patsy.dmatrices('{} ~ {}'.format(yvar, '+'.join(self.xvars)), data=self.data,
+                                         return_type='dataframe')
         self.xvars = [i for i in self.data.columns if i not in self.exclude]
         self.test= self.data[self.data[yvar] == True]
         self.control = self.data[self.data[yvar] == False]
         self.testn = len(self.test)
         self.controln = len(self.control)
-        self.minority, self.majority = [i[1] for i in sorted(zip([self.testn, self.controln],
-                                                                 [1, 0]),
-                                                             key=lambda x: x[0])]
+        self.minority, self.majority = \
+          [i[1] for i in sorted(zip([self.testn, self.controln], [1, 0]),
+                                key=lambda x: x[0])]
         print('Formula:\n{} ~ {}'.format(yvar, '+'.join(self.xvars)))
         print('n majority:', len(self.data[self.data[yvar] == self.majority]))
         print('n minority:', len(self.data[self.data[yvar] == self.minority]))
@@ -87,37 +84,36 @@ class Matcher:
             self.model_accuracy = []
         if not self.formula:
             # use all columns in the model
-            self.xvars_escaped = [ "Q('{}')".format(x) for x in self.xvars]
-            self.yvar_escaped = "Q('{}')".format(self.yvar)
-            self.formula = '{} ~ {}'.format(self.yvar_escaped, '+'.join(self.xvars_escaped))
+            self.formula = '{} ~ {}'.format(self.yvar, '+'.join(self.xvars))
         if balance:
             if nmodels is None:
                 # fit multiple models based on imbalance severity (rounded up to nearest tenth)
-                minor, major = [self.data[self.data[self.yvar] == i] for i in (self.minority,
-                                                                               self.majority)]
+                minor, major = [self.data[self.data[self.yvar] == i] for i in (self.minority, self.majority)]
                 nmodels = int(np.ceil((len(major) / len(minor)) / 10) * 10)
             self.nmodels = nmodels
             i = 0
             errors = 0
             while i < nmodels and errors < 5:
-                uf.progress(i+1, nmodels, prestr="Fitting Models on Balanced Samples")
+                uf.progress(i+1, nmodels,
+                            prestr="Fitting Models on Balanced Samples")
+         
                 # sample from majority to create balance dataset
                 df = self.balanced_sample()
                 df = pd.concat([uf.drop_static_cols(df[df[self.yvar] == 1], yvar=self.yvar),
-                                uf.drop_static_cols(df[df[self.yvar] == 0], yvar=self.yvar)],
-                               sort=True)
+                                uf.drop_static_cols(df[df[self.yvar] == 0], yvar=self.yvar)])
                 y_samp, X_samp = patsy.dmatrices(self.formula, data=df, return_type='dataframe')
                 X_samp.drop(self.yvar, axis=1, errors='ignore', inplace=True)
-                glm = GLM(y_samp, X_samp, family=sm.families.Binomial())
 
+                glm = GLM(y_samp, X_samp, family=sm.families.Binomial())
                 try:
                     res = glm.fit()
                     self.model_accuracy.append(self._scores_to_accuracy(res, X_samp, y_samp))
                     self.models.append(res)
-                    i = i + 1
+                    i += 1
                 except Exception as e:
-                    errors = errors + 1 # to avoid infinite loop for misspecified matrix
+                    errors += 1 # to avoid infinite loop for misspecified matrix
                     print('Error: {}'.format(e))
+
             print("\nAverage Accuracy:", "{}%".
                   format(round(np.mean(self.model_accuracy) * 100, 2)))
         else:
@@ -128,8 +124,8 @@ class Matcher:
             self.model_accuracy.append(self._scores_to_accuracy(res, self.X, self.y))
             self.models.append(res)
             print("\nAccuracy", round(np.mean(self.model_accuracy[0]) * 100, 2))
-
-
+            
+            
     def predict_scores(self):
         """
         Predict Propensity scores for each observation.
@@ -206,23 +202,21 @@ class Matcher:
     def select_from_design(self, cols):
         d = pd.DataFrame()
         for c in cols:
-            d = pd.concat([d, self.X.select(lambda x: x.startswith(c), axis=1)], axis=1, sort=True)
+            d = pd.concat([d, self.X.select(lambda x: x.startswith(c), axis=1)], axis=1)
         return d
 
     def balanced_sample(self, data=None):
         if not data:
             data=self.data
-        minor, major =  data[data[self.yvar] == self.minority], \
-                        data[data[self.yvar] == self.majority]
-        return major.sample(len(minor)).append(minor, sort=True).dropna()
+        minor, major = data[data[self.yvar] == self.minority], data[data[self.yvar] == self.majority]
+        return major.sample(len(minor)).append(minor).dropna()
 
     def plot_scores(self):
         """
         Plots the distribution of propensity scores before matching between
         our test and control groups
         """
-        assert 'scores' in self.data.columns, \
-            "Propensity scores haven't been calculated, use Matcher.predict_scores()"
+        assert 'scores' in self.data.columns, "Propensity scores haven't been calculated, use Matcher.predict_scores()"
         sns.distplot(self.data[self.data[self.yvar]==0].scores, label='Control')
         sns.distplot(self.data[self.data[self.yvar]==1].scores, label='Test')
         plt.legend(loc='upper right')
@@ -251,14 +245,12 @@ class Matcher:
 
         """
         if not uf.is_continuous(col, self.X) and col not in self.exclude:
-            pval_before = round(stats.chi2_contingency(self.prep_prop_test(self.data,
-                                                                           col))[1], 6)
-            pval_after = round(stats.chi2_contingency(self.prep_prop_test(self.matched_data,
-                                                                          col))[1], 6)
+            pval_before = round(stats.chi2_contingency(self.prep_prop_test(self.data, col))[1], 6)
+            pval_after = round(stats.chi2_contingency(self.prep_prop_test(self.matched_data, col))[1], 6)
             return {'var':col, 'before':pval_before, 'after':pval_after}
         else:
             print("{} is a continuous variable".format(col))
-
+   
     def compare_continuous(self, save=False, return_table=False):
         """
         Plots the ECDFs for continuous features before and
@@ -329,12 +321,12 @@ class Matcher:
                 Std. Median Difference: {}
                 Std. Mean Difference: {}
                 '''
-                ax1.set_title(title_str.format(col, "before", ksb, pb,
-                                               std_diff_med_before, std_diff_mean_before))
+                ax1.set_title(title_str\
+                  .format(col, "before", ksb, pb, std_diff_med_before, std_diff_mean_before))
                 ax2.plot(xca.x, xca.y, label='Control')
                 ax2.plot(xta.x, xta.y, label='Test')
-                ax2.set_title(title_str.format(col, "after", ksa, pa,
-                                               std_diff_med_after, std_diff_mean_after))
+                ax2.set_title(title_str\
+                  .format(col, "after", ksa, pa, std_diff_med_after, std_diff_mean_after))
                 ax2.legend(loc="lower right")
                 plt.xlim((0, np.percentile(xta.x, 99)))
 
@@ -414,12 +406,11 @@ class Matcher:
 
                 # plotting
                 df.plot.bar(alpha=.8)
-                plt.title(title_str.format(col, test_results_i["before"],
-                                           test_results_i["after"]))
+                plt.title(title_str.format(col, test_results_i["before"], test_results_i["after"]))
                 lim = max(.09, abs(df).max().max()) + .01
                 plt.ylim((-lim, lim))
         return pd.DataFrame(test_results)[['var', 'before', 'after']] if return_table else None
-
+      
     def prep_prop_test(self, data, var):
         """
         Helper method for running chi-square contingency tests
@@ -460,12 +451,14 @@ class Matcher:
         ctable = [[i[k] for k in sorted(all_keys)] for i in table]
         return ctable
 
+
     def prop_retained(self):
         """
         Returns the proportion of data retained after matching
         """
         return len(self.matched_data[self.matched_data[self.yvar] == self.minority]) * 1.0 / \
                len(self.data[self.data[self.yvar] == self.minority])
+
 
     def tune_threshold(self, method, nmatches=1, rng=np.arange(0, .001, .0001)):
         """
@@ -495,6 +488,7 @@ class Matcher:
         plt.xlabel("Threshold")
         plt.xticks(rng)
 
+
     def record_frequency(self):
         """
         Calculates the frequency of specifi records in
@@ -512,6 +506,7 @@ class Matcher:
         freqs.columns = ["freq", "n_records"]
         return freqs
 
+
     def assign_weight_vector(self):
         record_freqs = self.matched_data.groupby("record_id")\
                            .count()[['match_id']].reset_index()
@@ -520,7 +515,27 @@ class Matcher:
         fm['weight'] = 1/fm['weight']
         self.matched_data = fm
 
+
     @staticmethod
     def _scores_to_accuracy(m, X, y):
-        preds = [[1.0 if i >= .5 else 0.0 for i in m.predict(X)]]
-        return (y.to_numpy().T == preds).sum() * 1.0 / len(y)
+        predictions = m.predict(X)
+        predictions = predictions.values.reshape(len(predictions), 1)
+        # print(predictions.shape)
+        # print(0)
+        # print('\n y_shape', y.shape)
+        # print('p_shape', predictions.shape)
+        # print(1)
+        preds = [1.0 if i >= .5 else 0.0 for i in predictions]
+        # print(2)
+        # print('preds_len', len(preds))
+        # print('y dtype', type(y))
+        # res = (y.values==preds)
+        # print(2.1)
+        # res = res.sum()
+        # print(2.2)
+        # res = res * 1.0 / len(y)
+        # print(2.3)        
+        result =  (y.values == preds).sum() * 1.0 / len(y)
+        # print(3)
+
+        return result
